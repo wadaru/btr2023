@@ -4,6 +4,7 @@ import time
 import math
 import sys
 import rospy
+import numpy
 # import robotino2022
 import btr2023
 import quaternion
@@ -221,6 +222,22 @@ def robotinoOdometry(data):
       sendBeacon()
       btrBeaconCounter = 0
 
+def goToPoint(x, y, phi):
+    btrRobotino.w_robotinoMove(0, 0)
+    nowX = btrOdometry.pose.pose.position.x
+    nowY = btrOdometry.pose.pose.position.y
+    nowPhi = btrOdometry.pose.pose.position.z
+    dist = ((x - nowX)**2 + (y - nowY)**2) **0.5
+    turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
+    print(nowX, nowY, nowPhi, "=>", x, y, phi)
+    print(turn, turn - nowPhi)
+    btrRobotino.w_robotinoTurn(turn - nowPhi)
+    btrRobotino.w_robotinoMove(dist, 0)
+    nowPhi = btrOdometry.pose.pose.position.z
+    print(phi, phi - nowPhi)
+    btrRobotino.w_robotinoTurn(phi - nowPhi)
+    # btrRobotino.w_robotinoMove(x, y)
+    # btrRobotino.w_robotinoTurn(phi)
 # 
 # challenge program
 #
@@ -510,7 +527,7 @@ if __name__ == '__main__':
 
   btrField = [[0 for y in range(5)] for x in range(5)]
 
-  rospy.init_node('btr2022')
+  rospy.init_node('btr2023')
   rospy.Subscriber("rcll/beacon", BeaconSignal, beaconSignal)
   rospy.Subscriber("rcll/exploration_info", ExplorationInfo, explorationInfo)
   rospy.Subscriber("rcll/game_state", GameState, gameState)
@@ -525,7 +542,7 @@ if __name__ == '__main__':
   machineReport = MachineReportEntryBTR()
   prepareMachine = SendPrepareMachine() 
 
-  btrRobotino = btr2022.btr2022()
+  btrRobotino = btr2023.btr2023()
 
   pose = Pose2D()
   pose.x = -1000 * robotNum - 1500
@@ -602,8 +619,8 @@ if __name__ == '__main__':
         #
         MPSZone = "S53" # Input !!!
         MPSAngle = 0  # Input !!!
-        firstSide = "input"
-        turn = "counterClock"
+        firstSide = "input" # Check!!
+        turn = "counterClock" # Check!!
 
         # goTo S322
         goToPoint(zoneX["S32"], zoneY["S32"], 90)
@@ -618,25 +635,25 @@ if __name__ == '__main__':
             theta = MPSAngle
         
         goToPoint(MPSx, MPSy, theta)
-        btrRobotino.w_goToMPSCenter(350)
+        btrRobotino.w_goToMPSCenter()
         if (firstSide == "input"):
             time.sleep(10)
 
         btrRobotino.w_goToWall(20)
         if (turn == "clock"):
-            turnClockwise()
+            btrRobotino.w_turnClockwise()
         else:
-            turnCounterClockwise()
-        btrRobotino.w_goToMPSCenter(350)
+            btrRobotino.w_turnCounterClockwise()
+        btrRobotino.w_goToMPSCenter()
         time.sleep(10)
         
         btrRobotino.w_goToWall(20)
         if (turn == "clock"):
-            turnCounterClockwise()
+            btrRobotino.w_turnCounterClockwise()
         else:
-            turnClockwise()
+            btrRobotino.w_turnClockwise()
         if (firstSide == "output"):
-            btrRobotino.w_goToMPSCenter(350) 
+            btrRobotino.w_goToMPSCenter() 
             time.sleep(10)
         
         theta = 270

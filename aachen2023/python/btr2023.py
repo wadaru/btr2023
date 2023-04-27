@@ -157,7 +157,7 @@ class btr2023(object):
             #     v.y = 0
             #     v.x = 0
             # if (not(math.isnan(diff_y))) and (not(math.isnan(diff_x))):
-            print(diff_x, v.x, diff_y, v.y)
+            # print(diff_x, v.x, diff_y, v.y)
             self.w_setVelocity(v)
             if (v.x == 0) and (v.y == 0):
                 break
@@ -202,7 +202,7 @@ class btr2023(object):
                 diff += 360
             v.theta = -velocity1(diff)
             self.w_setVelocity(v)
-            print(diff, v)
+            # print(diff, v)
             if ((-3 < diff) and (diff < 3)):
                 break
         v.theta = 0

@@ -1,8 +1,8 @@
 #!/bin/bash
 ##
 REFBOX_DIR="~/rcll-refbox/bin"
-BTR_DIR="~/git/btr2022"
-GAME_DIR="rcap2022"
+BTR_DIR="~/git/btr2023"
+GAME_DIR="aachen2023"
 # TERM="xterm -e"
 TERM="gnome-terminal -- bash -c "
  
