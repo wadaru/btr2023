@@ -31,7 +31,7 @@ from robotino_msgs.srv import ResetOdometry
 # angular max velocity is 1.0[rad/s?] and min is 0.01
 min_mps_distance = 70
 turn_angle    = numpy.array([-999, -20, -10,   -5,   -2, -0.2, 0.1,     2,     5,    10,   20,  999])
-turn_velocity = numpy.array([ 1.0, 0.2, 0.1, 0.01, 0.01,    0,   0,- 0.01, -0.01,  -0.1, -0.2, -1.0])
+turn_velocity = numpy.array([  5, 0.2, 0.1, 0.01, 0.01,    0,   0,- 0.01, -0.01,  -0.1, -0.2, -5])
 
 go_distance = numpy.array([-9999, -50,   -20,  -15, -10, 10,   15,   20,  50, 9999])
 go_velocity = numpy.array([ -0.1,-0.1, -0.01,-0.01,   0,  0, 0.01, 0.01, 0.1,  0.1])
@@ -39,8 +39,8 @@ go_velocity = numpy.array([ -0.1,-0.1, -0.01,-0.01,   0,  0, 0.01, 0.01, 0.1,  0
 go_distance_fast = numpy.array([-9999, -20, -10,   -1, -0.9, 0,   1, 1.1,    5, 10,  20, 9999])
 go_velocity_fast = numpy.array([ -0.1,-0.1,-0.1,-0.01,    0, 0,0.01,0.01,0.015,0.1, 0.1,  0.1])
 
-move_distance = numpy.array([-99999, -500, -100,  -10, -9, 9,  10, 100, 500, 99999])
-move_velocity = numpy.array([-  0.1, -0.1,-0.05,-0.01,  0, 0,0.01,0.05, 0.1,   0.1])
+move_distance = numpy.array([-99999, -1000, -500, -100,  -10, -9, 9,  10, 100, 500, 1000, 99999])
+move_velocity = numpy.array([  -300,  -300, -100,-0.05,-0.01,  0, 0,0.01,0.05, 100, 300,    300])
 
 def quaternion_to_euler(quaternion):
     """Convert Quaternion to Euler Angles
@@ -158,6 +158,7 @@ class btr2023(object):
             #     v.x = 0
             # if (not(math.isnan(diff_y))) and (not(math.isnan(diff_x))):
             # print(diff_x, v.x, diff_y, v.y)
+            print(v)
             self.w_setVelocity(v)
             if (v.x == 0) and (v.y == 0):
                 break
@@ -261,6 +262,7 @@ class btr2023(object):
     def w_goToWall(self, distance):
         global go_distance_fast, go_velocity_fast
         velocityX = interpolate.interp1d(go_distance_fast, go_velocity_fast)
+        print("Wall ", distance)
         while True:
             sensor = self.centerPoint.x * 100
             v = Pose2D()
@@ -273,7 +275,7 @@ class btr2023(object):
                 v.x = velocityX(sensor - distance)
             v.y = 0
             v.theta = 0
-            print("Wall ", distance, "cm:", sensor, v.x)
+            # print("Wall ", distance, "cm:", sensor, v.x)
             # if ((-0.001 < v.x) and (v.x < 0.001)):
             #     v.x = 0
             # if (not(math.isnan(sensor))):
@@ -316,6 +318,7 @@ class btr2023(object):
                 break
 
     def w_turnClockwise(self):
+        print("turnClockWise")
         self.w_goToWall(20)
         self.w_robotinoTurn(90)
         self.w_robotinoMove(700, 0)
@@ -326,6 +329,7 @@ class btr2023(object):
         self.w_robotinoTurn(-90)
 
     def w_turnCounterClockwise(self):
+        print("turnCounterClockWise")
         self.w_goToWall(20)
         self.w_robotinoTurn(-90)
         self.w_robotinoMove(700, 0)

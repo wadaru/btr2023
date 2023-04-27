@@ -52,8 +52,8 @@ zoneY = { "S11" :  500, "S21" :  500, "S31" :  500, "S41" :  500, "S51" :  500,
           "S13" : 2500, "S23" : 2500, "S33" : 2500, "S43" : 2500, "S53" : 2500,
           "S14" : 3500, "S24" : 3500, "S34" : 3500, "S44" : 3500, "S54" : 3500,
           "S15" : 4500, "S25" : 4500, "S35" : 4500, "S45" : 4500, "S55" : 4500 }
-inputX = { 0: 1000, 45: 500, 90:     0, 135:  -500, 180: -1000, 225:  -500, 270:     0, 315: 500, 360: 1000}
-inputY = { 0:     0, 45: -500, 90: -1000, 135: -500, 180:    0, 225:  500, 270:  1000, 315:  500, 360:     0}
+inputX = { 0: 1000, 45: 500, 90:    0, 135:  -500, 180: -1000, 225:  -500, 270:     0, 315: 500, 360: 1000}
+inputY = { 0:    0, 45: 500, 90: 1000, 135: 500, 180:    0, 225:  -500, 270:  -1000, 315:  -500, 360:     0}
 outputX = {  0: inputX[180],  45: inputX[225],  90: inputX[270], 135: inputX[315],
            180: inputX[  0], 225: inputX[ 45], 270: inputX[ 90], 315: inputX[135]}
 outputY = {  0: inputY[180],  45: inputY[225],  90: inputY[270], 135: inputY[315],
@@ -565,6 +565,7 @@ if __name__ == '__main__':
       goToPoint(pose.x, pose.y, pose.theta)
       exit()
   btrRobotino.w_resetOdometry(pose)
+  time.sleep(3)
 
   print(challenge)
   challengeFlag = True
@@ -617,10 +618,10 @@ if __name__ == '__main__':
         #
         # MPSZone, MPSAngle, firstSide, turn
         #
-        MPSZone = "S53" # Input !!!
-        MPSAngle = 0  # Input !!!
+        MPSZone = "S34" # Input !!!
+        MPSAngle = 180  # Input !!!
         firstSide = "input" # Check!!
-        turn = "counterClock" # Check!!
+        turn = "clock" # Check!!
 
         # goTo S322
         goToPoint(zoneX["S32"], zoneY["S32"], 90)
@@ -637,6 +638,7 @@ if __name__ == '__main__':
         goToPoint(MPSx, MPSy, theta)
         btrRobotino.w_goToMPSCenter()
         if (firstSide == "input"):
+            print("wait")
             time.sleep(10)
 
         btrRobotino.w_goToWall(20)
@@ -645,6 +647,7 @@ if __name__ == '__main__':
         else:
             btrRobotino.w_turnCounterClockwise()
         btrRobotino.w_goToMPSCenter()
+        print("wait")
         time.sleep(10)
         
         btrRobotino.w_goToWall(20)
@@ -654,6 +657,7 @@ if __name__ == '__main__':
             btrRobotino.w_turnClockwise()
         if (firstSide == "output"):
             btrRobotino.w_goToMPSCenter() 
+            print("wait")
             time.sleep(10)
         
         theta = 270

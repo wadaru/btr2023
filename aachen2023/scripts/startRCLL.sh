@@ -15,7 +15,7 @@ for PROGNAME in roscore; do
 	killall $PROGNAME 2> /dev/null
 done
 
-sudo chmod 777 /dev/ttyUSB? /dev/ttyACM?
+sudo chmod 777 /dev/ttyUSB? /dev/ttyACM? /dev/video?
 
 # gnome-terminal --geometry=105x56 --window\
 $TERM "bash -c roscore" &
