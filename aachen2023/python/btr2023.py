@@ -40,7 +40,7 @@ go_distance_fast = numpy.array([-9999, -20, -10,   -1, -0.9, 0,   1, 1.1,    5, 
 go_velocity_fast = numpy.array([ -0.1,-0.1,-0.1,-0.01,    0, 0,0.01,0.01,0.015,0.1, 0.1,  0.1])
 
 move_distance = numpy.array([-99999, -1000, -500, -100,  -10, -9, 9,  10, 100, 500, 1000, 99999])
-move_velocity = numpy.array([  -300,  -300, -100,-0.05,-0.01,  0, 0,0.01,0.05, 100, 300,    300])
+move_velocity = numpy.array([  -300,  -300,   -1,-0.05,-0.01,  0, 0,0.01,0.05,   1, 300,    300])
 
 def quaternion_to_euler(quaternion):
     """Convert Quaternion to Euler Angles

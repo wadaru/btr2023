@@ -584,16 +584,17 @@ if __name__ == '__main__':
         btrRobotino.w_turnCounterClockwise()
         break
 
-    if (challenge == "testMPS" and challengeFlag):
+    if (challenge == "grasping" and challengeFlag):
+        slotNo = 3
         if (True):
-            btrRobotino.w_goToOutputVelt()
-            btrRobotino.w_getWork()
-            btrRobotino.w_turnClockwise()
+            moveGo   = [-100, -220, -305]
+            moveBack = [ 105,  220,  310]
             btrRobotino.w_goToInputVelt()
+            btrRobotino.w_robotinoMove(0,  moveGo[  slotNo - 1])
+            btrRobotino.w_getWork()
+            # btrRobotino.w_goToInputVelt()
+            btrRobotino.w_robotinoMove(0,  moveBack[slotNo - 1])
             btrRobotino.w_putWork()
-            btrRobotino.w_turnCounterClockwise()
-        else:
-            startGrasping()
         challengeFlag = False
 
     if (challenge == "driving" and challengeFlag):
