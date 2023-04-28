@@ -29,29 +29,34 @@ joints_name = ["joint_1", "joint_2",
 # Poses
 #
 joints_grab_01 = [0.06125191496475896, -0.32464939841015966, 2.2169738618717036, 0.10941719117321055, 1.2436783485121323, 1.5506928224563084]
+joints_grab_01 = [0.015372102211232943, -0.6719372381999774, 2.322403823929694, -0.7812636597071613, 1.5256047721544699, 2.9483658700577924]
 joints_grab_02 = [0.023708511487324654, 0.636281693027016, 1.072247128704676, 0.07258491467581482, 1.5366322484961243, 1.6949599441833756]
 joints_grab_03 = [0.1058310113773345, 0.734590893346414, 1.4702046998243976, -0.00776509098648591, 1.035586186898004, 1.6193924835160065]
 joints_grab_04 = [0.1058310113773345, 0.7346527953345616, 1.4702606110646617, -0.007287558653092391, 1.0356511818469727, 1.6192191636520905]
 # gripper close
 joints_grab_05 = [0.10589013484737769, 0.7345820502052501, 1.4701674256642216, -0.007806615537215781, 1.0355645219150147, 1.6193274885670381]
 joints_grab_06 = [0.10589013484737769, 0.7345820502052501, 1.4702046998243976, -0.007827377812580716, 1.0356078518809937, 1.6192841586010591]
-joints_grab_07 = [0.1058310113773345, 0.7345820502052501, 1.4702046998243976, -0.007848140087945652, 1.0356078518809937, 1.6192841586010591]
-joints_grab_08 = [0.09965260875781971, 0.7295679891653024, 1.5415101682412036, 0.025724459177155195, 1.0025687528220093, 1.6400608772879877]
+#joints_grab_07 = [0.1058310113773345, 0.7345820502052501, 1.4702046998243976, -0.007848140087945652, 1.0356078518809937, 1.6192841586010591]
+joints_grab_07 = [0.1058310113773345, 0.6045820502052501, 1.7502046998243976, -0.007848140087945652, 0.7056078518809937, 1.6192841586010591]
+joints_grab_07_2 = [0.1058310113773345, 0.5045820502052501, 1.8502046998243976, -0.007848140087945652, 0.7056078518809937, 1.6192841586010591]
+#joints_grab_08 = [0.09965260875781971, 0.7295679891653024, 1.5415101682412036, 0.025724459177155195, 1.0025687528220093, 1.6400608772879877]
+joints_grab_08 = [0.09965260875781971, 0.5295679891653024, 1.6415101682412036, 0.025724459177155195, 1.0025687528220093, 1.6400608772879877]
 joints_grab_09 = [0.061311038434802165, 0.5398295523520429, 1.472236141553993, 0.03429927890287359, 1.1927223085208332, 1.7010911343694035]
 joints_grab_10 = [0.060956297614542944, 0.5399533563283379, 1.4725716089955776, 0.03492214716382166, 1.1926356485888752, 1.7068323548616204]
 joints_grab_11 = joints_grab_01
 
-one_radian = math.pi / 180
+one_degree = math.pi / 180 #rad
 joints_release_01 = joints_grab_01
 joints_release_02 = [0.11449259973866383, 0.6079924844436072, 1.382125859328364, -0.05950468119590539, 1.1804599281487773, 1.6736416009217097]
 joints_release_03 = [0.10855069099932187, 0.7401001702915418, 1.4309922833191808, -0.06041822131196256, 0.9812504095603432, 1.6966498128565564]
-joints_release_04 = [0.10855069099932187 + 2*one_radian, 0.7401001702915418, 1.4309922833191808, -0.06041822131196256, 0.9812504095603432, 1.6966498128565564]
-joints_release_05 = [0.10855069099932187 + 0.8*one_radian, 0.7401001702915418, 1.4309922833191808, -0.06041822131196256, 0.9812504095603432, 1.6966498128565564]
+joints_release_04 = [0.10855069099932187 + 2*one_degree, 0.7401001702915418, 1.4309922833191808, -0.06041822131196256, 0.9812504095603432, 1.6966498128565564]
+joints_release_05 = [0.10855069099932187 + 0.8*one_degree, 0.7401001702915418, 1.4309922833191808, -0.06041822131196256, 0.9812504095603432, 1.6966498128565564]
+joints_release_05_2 = [0.10855069099932187 + 0.8*one_degree, 0.7401001702915418, 1.4309922833191808, -0.06041822131196256, 0.9812504095603432 + 10*one_degree, 1.6966498128565564]
 
 
 #
 #
-#PLAY EREA
+#PLAY AERE
 #
 #
 
@@ -67,16 +72,21 @@ def grab_Arm(data):
     print "cobotta grabbing objects..."
 
     gripper_move(gripper_client,gripper_parallel_open,gripper_parallel_speed,gripper_parallel_effort)
+    rospy.sleep(1)
     move_group.go(joints_grab_01, wait = True)
     move_group.go(joints_grab_02, wait = True)
     move_group.go(joints_grab_03, wait = True)
     move_group.go(joints_grab_04, wait = True)
-    gripper_move(gripper_client,gripper_parallel_close,gripper_parallel_speed,gripper_parallel_effort)
+    gripper_move(gripper_client,gripper_parallel_mid,gripper_parallel_speed,gripper_parallel_effort)
+    rospy.sleep(1)
     move_group.go(joints_grab_05, wait = True)
     move_group.go(joints_grab_06, wait = True)
-    rospy.sleep(5)
+    rospy.sleep(3)
     move_group.go(joints_grab_07, wait = True)
-    move_group.go(joints_grab_08, wait = True)
+    gripper_move(gripper_client,gripper_parallel_close,gripper_parallel_speed,gripper_parallel_effort)
+    rospy.sleep(1)
+    move_group.go(joints_grab_07_2, wait = True)
+    #move_group.go(joints_grab_08, wait = True)
     move_group.go(joints_grab_09, wait = True)
     move_group.go(joints_grab_10, wait = True)
     move_group.go(joints_grab_11, wait = True)
@@ -92,6 +102,7 @@ def release_Arm(data):
     print gripper_parallel_open, gripper_parallel_close
     move_group.go(joints_release_01,wait = True)
     move_group.go(joints_release_02,wait = True)
+    move_group.go(joints_release_02,wait = True)
     #move_group.go(joints_release_03,wait = True)
     #gripper_move(gripper_client,gripper_parallel_open,gripper_parallel_speed,gripper_parallel_effort)
     #rospy.sleep(5)
@@ -100,6 +111,9 @@ def release_Arm(data):
     #move_group.go(joints_release_03,wait = True)
     gripper_move(gripper_client,gripper_parallel_open,gripper_parallel_speed,gripper_parallel_effort)
     rospy.sleep(5)
+    move_group.go(joints_release_05_2,wait = True)
+    rospy.sleep(1)
+    move_group.go(joints_release_05,wait = True)
     move_group.go(joints_release_02,wait = True)
     move_group.go(joints_release_01,wait = True)
     print"robotino moving next position..."
@@ -118,8 +132,8 @@ def release_Arm(data):
 # Parallel gripper
 #
 gripper_parallel_open   =  0.015
-gripper_parallel_mid    =  0.0010
-gripper_parallel_close  =  0.0001
+gripper_parallel_mid    =  0.003
+gripper_parallel_close  =  0.0005
 gripper_parallel_speed  = 10.0
 gripper_parallel_effort = 10.0
 

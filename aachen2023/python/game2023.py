@@ -5,8 +5,13 @@ import math
 import sys
 import rospy
 import numpy
+import cv2
 # import robotino2022
 import btr2023
+from module_photographer import module_photographer
+from module_work_detect import module_work_detect
+from module_line_detect import module_line_detect
+
 import quaternion
 import tf
 import rcll_ros_msgs
@@ -242,7 +247,7 @@ def goToPoint(x, y, phi):
 # challenge program
 #
 
-def startGrasping():
+def old_startGrasping():
     for j in range(3):
         print(j)
         btrRobotino.w_goToOutputVelt()
@@ -260,6 +265,80 @@ def startGrasping():
         else:
             btrRobotino.w_turnClockwise()
         # finish?
+
+def startGrasping():
+    for _ in range(3):
+        challengeFlag = False
+        pg = module_photographer()
+        btrRobotino.w_goToMPSCenterLRF()
+        btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToMPSCenterLRF()
+        btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToMPSCenterLRF()
+        btrRobotino.w_robotinoMove(0, 25)
+        btrRobotino.w_goToWall(15+20)
+        btrRobotino.w_parallelMPS()
+
+        name = "g_ref_img"
+        a_previous = 0
+        for i in range(10):
+            pg.g_run()
+            rospy.sleep(1)
+            img = cv2.imread("{}.jpg".format(name), 0)
+            wd = module_work_detect(img)
+            ato_take = wd.detect()
+            if ato_take == -1: # left
+                btrRobotino.w_robotinoMove(0, -15)
+            elif ato_take == 1: # right
+                btrRobotino.w_robotinoMove(0, 15)
+            elif ato_take == 2: # none detected
+                btrRobotino.w_robotinoMove(0, -a_previous*15)
+            else:
+                break
+            a_previous = int((-ato_take)*(ato_take % 2))
+
+        #btrRobotino.w_goToOutputVelt()
+        btrRobotino.w_goToWall(15)
+        btrRobotino.w_getWork()
+                if (robotNum != 2):
+            btrRobotino.w_turnClockwise()
+        else:
+            btrRobotino.w_turnCounterClockwise()
+
+        btrRobotino.w_goToMPSCenterLRF()
+        btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToMPSCenterLRF()
+        btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToMPSCenterLRF()
+        btrRobotino.w_robotinoMove(0, 25)
+        btrRobotino.w_goToWall(15)
+
+        name = "r_ref_img"
+        a_previous = 0
+        for i in range(10):
+            pg.r_run()
+            rospy.sleep(1)
+            img = cv2.imread("{}.jpg".format(name), 0)
+            ld = module_line_detect(img)
+            ato_take = ld.detect()
+            if ato_take == -1: # left
+                btrRobotino.w_robotinoMove(0, -15)
+            elif ato_take == 1: # right
+                btrRobotino.w_robotinoMove(0, 15)
+            elif ato_take == 2: # none detected
+                btrRobotino.w_robotinoMove(0, -a_previous*15)
+            else:
+                break
+            a_previous = int((-ato_take)*(ato_take % 2))
+
+        btrRobotino.w_putWork()
+        if (robotNum != 2):
+            btrRobotino.w_turnCounterClockwise()
+        else:
+            btrRobotino.w_turnClockwise()
+
+        print("{} / 3 finished!".format(_+1))
+
 
 def initField():
     global btrField
@@ -584,7 +663,7 @@ if __name__ == '__main__':
         btrRobotino.w_turnCounterClockwise()
         break
 
-    if (challenge == "grasping" and challengeFlag):
+    if (challenge == "gripping" and challengeFlag):
         slotNo = 3
         if (True):
             moveGo   = [-100, -220, -305]
@@ -595,6 +674,15 @@ if __name__ == '__main__':
             # btrRobotino.w_goToInputVelt()
             btrRobotino.w_robotinoMove(0,  moveBack[slotNo - 1])
             btrRobotino.w_putWork()
+        challengeFlag = False
+
+    if (challenge == "grasping" and challengeFlag):
+        btrRobotino.w_goToOutputVelt()
+        btrRobotino.w_getWork()
+        btrRobotino.w_turnClockwise()
+        btrRobotino.w_goToInputVelt()
+        btrRobotino.w_putWork()
+        btrRobotino.w_turnCounterClockwise()
         challengeFlag = False
 
     if (challenge == "driving" and challengeFlag):
