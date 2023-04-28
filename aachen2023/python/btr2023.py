@@ -30,6 +30,7 @@ from robotino_msgs.srv import ResetOdometry
 # linear max velocity is 0.1[m/s] and min is 0.01.
 # angular max velocity is 1.0[rad/s?] and min is 0.01
 min_mps_distance = 70
+camera_offset = 100
 turn_angle    = numpy.array([-999, -20, -10,   -5,   -2, -0.2, 0.1,     2,     5,    10,   20,  999])
 turn_velocity = numpy.array([  5, 0.2, 0.02, 0.02, 0.02,    0,   0,- 0.02, -0.02, -0.02, -0.2, -5])
 
@@ -371,6 +372,47 @@ class btr2023(object):
 
     def rightPoint(self, data):
         self.rightPoint = data
+
+    def w_getMPSLocation(self):
+        rospy.wait_for_service('/btr_aruco/TagLocation')
+        self.getTagLocation = rospy.ServiceProxy('/btr_aruco/TagLocation', TagLocation)
+        print("getTagLocation")
+        self.resp = self.getTagLocation()
+        self.MPS_find = self.resp.ok
+        if (self.resp.ok == False):
+            return
+        # 350 / 2 = the distance between MPS's tag and MPS's center.
+        x = self.resp.tag_location.x * 1000 + camera_offset + 350 / 2
+        y = self.resp.tag_location.y * 1000
+        phi = self.resp.tag_location.theta
+        # print("finish")
+        # print(self.resp)
+
+        while True:
+            nowPoint = self.btrOdometry
+            # print(nowAngle.pose.pose.position.z)
+            if (nowPoint.header.seq != 0):
+                break
+
+        theta = nowPoint.pose.pose.position.z / 180 * math.pi
+        target_x = x * math.cos(theta) - y * math.sin(theta) + nowPoint.pose.pose.position.x
+        target_y = x * math.sin(theta) + y * math.cos(theta) + nowPoint.pose.pose.position.y
+        self.MPS_id = self.resp.tag_id.data
+        self.MPS_x = target_x
+        self.MPS_y = target_y
+        self.MPS_phi = -phi + nowPoint.pose.pose.position.z 
+        if ((self.resp.tag_id.data % 2) == 1):
+            self.MPS_phi += 180
+        print(self.MPS_phi)
+        self.MPS_phi = int((self.MPS_phi + 22.5) / 45) * 45
+        self.MPS_phi = ((self.MPS_phi + 360) % 360)
+        if self.MPS_x < 0:
+            zone = "M"
+        else:
+            zone = "C"
+        zone_x = int(abs(self.MPS_x) / 1000) + 1
+        zone_y = int(abs(self.MPS_y) / 1000) + 1
+        self.MPS_zone = zone + "_Z" + str(zone_x * 10 + zone_y)
 
 #    robot.x = btrOdometry.pose.pose.position.x
 #    robot.y = btrOdometry.pose.pose.position.y

@@ -112,12 +112,12 @@ def tagLocation(data):
             print("y : " + str(tvec[1]))
             print("z : " + str(tvec[2]))
 
-            #print("roll : " + str(euler_angle[0]))
-            print("pitch: " + str(euler_angle[1]))
-            #print("yaw  : " + str(euler_angle[2]))
+            print("roll : " + str(euler_angle[0]))
+            # print("pitch: " + str(euler_angle[1]))
+            # print("yaw  : " + str(euler_angle[2]))
             tagLocation.tag_location.x = tvec[2]
             tagLocation.tag_location.y = -tvec[0]
-            tagLocation.tag_location.theta = euler_angle[1]
+            tagLocation.tag_location.theta = euler_angle[0]
             tagLocation.tag_id.data = tagInfo.tag_id.data
             tagLocation.ok = True
     return tagLocation

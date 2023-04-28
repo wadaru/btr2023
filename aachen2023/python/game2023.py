@@ -63,6 +63,14 @@ outputX = {  0: inputX[180],  45: inputX[225],  90: inputX[270], 135: inputX[315
            180: inputX[  0], 225: inputX[ 45], 270: inputX[ 90], 315: inputX[135]}
 outputY = {  0: inputY[180],  45: inputY[225],  90: inputY[270], 135: inputY[315],
            180: inputY[  0], 225: inputY[ 45], 270: inputY[ 90], 315: inputY[135]}
+machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-I",
+                201 : "M-CS1-O", 202 : "M-CS1-I", 203 : "M-CS2-O", 204 : "M-CS2-I",
+                111 : "C-RS1-O", 112 : "C-RS1-I", 113 : "C-RS2-O", 114 : "C-RS2-I",
+                211 : "M-RS1-O", 212 : "M-RS1-I", 213 : "M-RS2-O", 214 : "M-RS2-I",
+                121 : "C-BS-O",  122 : "C-BS-I",  221 : "M-BS-O",  222 : "M-BS-I",
+                131 : "C-DS-O",  132 : "C-DS-I",  231 : "M-DS-O",  232 : "M-DS-I",
+                141 : "C-SS-O",  142 : "C-SS-I",  241 : "M-SS-O",  242 : "M-SS-I",
+                301 : "UMPS-1",  302 : "UMPS-2" }
 
 def quaternion_to_euler(quaternion):
     """Convert Quaternion to Euler Angles
@@ -649,14 +657,30 @@ if __name__ == '__main__':
     # sendBeacon()
     # print("sendBeacon")
     
-    if (challenge == "test" and challengeFlag):
+    if (challenge == "nbr33" and challengeFlag):
         challengeFlag = False
-        btrRobotino.w_goToOutputVelt()
-        btrRobotino.w_getWork()
-        btrRobotino.w_turnClockwise()
-        btrRobotino.w_goToInputVelt()
-        btrRobotino.w_putWork()
-        btrRobotino.w_turnCounterClockwise()
+        # goTo S33
+        goToPoint(zoneX["S33"], zoneY["S33"], 90)
+        for j in range(2):
+            for i in range(8):
+                btrRobotino.w_robotinoTurn(45)
+                btrRobotino.w_getMPSLocation()
+                if (btrRobotino.MPS_find == True):
+                    name = machineName[btrRobotino.MPS_id]
+                    print(name, btrRobotino.MPS_zone, btrRobotino.MPS_phi)
+                    machineReport.name = name[0: len(name) - 2]
+                    if (name[4 : 1] == "-"):
+                        machineReport.type = name[2 : 2]
+                    else:
+                        machineReport.type = name[2 : 3]
+                    zone = int(btrRobotino.MPS_zone[3 : 2])
+                    if (btrRobotino.MPS_zone[0: 1] == "M")
+                        zone = -zone
+                    machineReport.rotation = btrRobotino.MPS_phi
+                    sendMachineReport(machineReport)
+            print(j)
+            time.sleep(3)
+
         break
 
     if (challenge == "gripping" and challengeFlag):
