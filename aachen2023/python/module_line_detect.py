@@ -143,7 +143,7 @@ class module_line_detect():
                         if ymin == 3:
                             #print("ymin3")
                             if ymax == 0:
-                                self.t = [self.rlines[j][2],sel.frlines[j][3],self.rlines[i][0],self.rlines[i][1]]
+                                self.t = [self.rlines[j][2],self.rlines[j][3],self.rlines[i][0],self.rlines[i][1]]
                             if ymax == 1:
                                 self.t = [self.rlines[j][2],self.rlines[j][3],self.rlines[i][2],self.rlines[i][3]]
                             else:
