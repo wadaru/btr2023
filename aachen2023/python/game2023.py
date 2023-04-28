@@ -310,6 +310,7 @@ def startGrasping():
         name = "r_ref_img"
         a_previous = 0
         for i in range(10):
+            break
             pg.r_run()
             rospy.sleep(1)
             img = cv2.imread("{}.jpg".format(name), 0)
