@@ -300,7 +300,8 @@ def startGrasping():
         #btrRobotino.w_goToOutputVelt()
         btrRobotino.w_goToWall(15)
         btrRobotino.w_getWork()
-                if (robotNum != 2):
+
+        if (robotNum != 2):
             btrRobotino.w_turnClockwise()
         else:
             btrRobotino.w_turnCounterClockwise()
@@ -679,11 +680,7 @@ if __name__ == '__main__':
     if (challenge == "grasping" and challengeFlag):
         challengeFlag = False
         pg = module_photographer()
-        btrRobotino.w_goToMPSCenter()
-        btrRobotino.w_parallelMPS()
-        btrRobotino.w_goToMPSCenter()
-        btrRobotino.w_parallelMPS()
-        btrRobotino.w_goToMPSCenter()
+        btrRobotino.w_goToOutputVelt()
         btrRobotino.w_robotinoMove(0, 25)
         btrRobotino.w_goToWall(15+20)
         btrRobotino.w_parallelMPS()
@@ -714,11 +711,7 @@ if __name__ == '__main__':
         else:
             btrRobotino.w_turnCounterClockwise()
 
-        btrRobotino.w_goToMPSCenter()
-        btrRobotino.w_parallelMPS()
-        btrRobotino.w_goToMPSCenter()
-        btrRobotino.w_parallelMPS()
-        btrRobotino.w_goToMPSCenter()
+        btrRobotino.w_goToInputVelt()
         btrRobotino.w_robotinoMove(0, 25)
         btrRobotino.w_goToWall(15)
 
