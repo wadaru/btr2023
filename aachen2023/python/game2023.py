@@ -669,13 +669,14 @@ if __name__ == '__main__':
                     name = machineName[btrRobotino.MPS_id]
                     print(name, btrRobotino.MPS_zone, btrRobotino.MPS_phi)
                     machineReport.name = name[0: len(name) - 2]
-                    if (name[4 : 1] == "-"):
-                        machineReport.type = name[2 : 2]
+                    if (name[4 : 5] == "-"):
+                        machineReport.type = name[2 : 4]
                     else:
-                        machineReport.type = name[2 : 3]
-                    zone = int(btrRobotino.MPS_zone[3 : 2])
-                    if (btrRobotino.MPS_zone[0: 1] == "M")
+                        machineReport.type = name[2 : 5]
+                    zone = int(btrRobotino.MPS_zone[3 : 5])
+                    if (btrRobotino.MPS_zone[0: 1] == "M"):
                         zone = -zone
+                    machineReport.zone = zone
                     machineReport.rotation = btrRobotino.MPS_phi
                     sendMachineReport(machineReport)
             print(j)
