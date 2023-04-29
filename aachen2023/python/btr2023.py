@@ -136,7 +136,7 @@ class btr2023(object):
                 break
 
         theta = nowPoint.pose.pose.position.z / 180 * math.pi
-        print("theta", theta, nowPoint.pose.pose.position.z)
+        # print("theta", theta, nowPoint.pose.pose.position.z)
         target_x = x * math.cos(theta) - y * math.sin(theta) + nowPoint.pose.pose.position.x 
         target_y = x * math.sin(theta) + y * math.cos(theta) + nowPoint.pose.pose.position.y
         while True:
@@ -159,7 +159,7 @@ class btr2023(object):
             #     v.x = 0
             # if (not(math.isnan(diff_y))) and (not(math.isnan(diff_x))):
             # print(diff_x, v.x, diff_y, v.y)
-            print(v)
+            # print(v)
             self.w_setVelocity(v)
             if (v.x == 0) and (v.y == 0):
                 break
@@ -175,6 +175,17 @@ class btr2023(object):
         self.w_goToMPSCenter()
         self.w_robotinoMove(0, 25)
         # self.w_goToWall(15)
+
+    def w_robotinoTurnAbs(self, turnAngle):
+        while True:
+            print("turn")
+            nowAngle = self.btrOdometry
+            # print(nowAngle.pose.pose.position.z)
+            if (nowAngle.header.seq != 0):
+                break
+
+        targetAngle = turnAngle - nowAngle.pose.pose.position.z
+        self.w_robotinoTurn(targetAngle)
 
     def w_robotinoTurn(self, turnAngle):
         global turn_angle, turn_velocity
@@ -357,12 +368,12 @@ class btr2023(object):
     def robotinoOdometry(self, data):
         # global self.btrOdometry
         quat = quaternion_to_euler(Quaternion(data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w))
-        self.btrOdometry = data
-        self.btrOdometry.pose.pose.position.x = data.pose.pose.position.x * 1000
-        self.btrOdometry.pose.pose.position.y = data.pose.pose.position.y * 1000
-        # self.btrOdometry.pose.pose.position.z = quat.z / math.pi * 180
-        self.btrOdometry.pose.pose.position.z = data.pose.pose.position.z / math.pi * 180
-        # print(self.btrOdometry)
+        btrOdometryTmp = data
+        btrOdometryTmp.pose.pose.position.x = data.pose.pose.position.x
+        btrOdometryTmp.pose.pose.position.y = data.pose.pose.position.y
+        btrOdometryTmp.pose.pose.position.z = data.pose.pose.position.z / math.pi * 180
+        self.btrOdometry = btrOdometryTmp
+        # print(self.btrOdometry.pose.pose.position.x)
 
     def centerPoint(self, data):
         self.centerPoint = data
@@ -403,9 +414,9 @@ class btr2023(object):
         self.MPS_phi = -phi + nowPoint.pose.pose.position.z 
         if ((self.resp.tag_id.data % 2) == 1):
             self.MPS_phi += 180
-        print(self.MPS_phi)
+        # print("Tag:", phi, ", Rob" , nowPoint.pose.pose.position.z, ", MPS", self.MPS_phi)
+        self.MPS_phi = ((self.MPS_phi + 360 * 2) % 360)
         self.MPS_phi = int((self.MPS_phi + 22.5) / 45) * 45
-        self.MPS_phi = ((self.MPS_phi + 360) % 360)
         if self.MPS_x < 0:
             zone = "M"
         else:

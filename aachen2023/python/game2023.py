@@ -142,8 +142,8 @@ def sendBeacon():
 
     # for poseStamped()
     beacon.pose = PoseStamped()
-    beacon.pose.pose.position.x = btrOdometry.pose.pose.position.x
-    beacon.pose.pose.position.y = btrOdometry.pose.pose.position.y
+    beacon.pose.pose.position.x = btrOdometry.pose.pose.position.x / 1000
+    beacon.pose.pose.position.y = btrOdometry.pose.pose.position.y / 1000
     beacon.pose.pose.position.z = 0
     beacon.pose.pose.orientation.x = btrOdometry.pose.pose.orientation.x
     beacon.pose.pose.orientation.y = btrOdometry.pose.pose.orientation.y
@@ -242,12 +242,12 @@ def goToPoint(x, y, phi):
     nowPhi = btrOdometry.pose.pose.position.z
     dist = ((x - nowX)**2 + (y - nowY)**2) **0.5
     turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
-    print(nowX, nowY, nowPhi, "=>", x, y, phi)
-    print(turn, turn - nowPhi)
+    # print(nowX, nowY, nowPhi, "=>", x, y, phi)
+    # print(turn, turn - nowPhi)
     btrRobotino.w_robotinoTurn(turn - nowPhi)
     btrRobotino.w_robotinoMove(dist, 0)
     nowPhi = btrOdometry.pose.pose.position.z
-    print(phi, phi - nowPhi)
+    # print(phi, phi - nowPhi)
     btrRobotino.w_robotinoTurn(phi - nowPhi)
     # btrRobotino.w_robotinoMove(x, y)
     # btrRobotino.w_robotinoTurn(phi)
@@ -318,7 +318,6 @@ def startGrasping():
         name = "r_ref_img"
         a_previous = 0
         for i in range(10):
-            break
             pg.r_run()
             rospy.sleep(1)
             img = cv2.imread("{}.jpg".format(name), 0)
@@ -662,8 +661,7 @@ if __name__ == '__main__':
         # goTo S33
         goToPoint(zoneX["S33"], zoneY["S33"], 90)
         for j in range(2):
-            for i in range(8):
-                btrRobotino.w_robotinoTurn(45)
+            for i in range(9):
                 btrRobotino.w_getMPSLocation()
                 if (btrRobotino.MPS_find == True):
                     name = machineName[btrRobotino.MPS_id]
@@ -679,9 +677,11 @@ if __name__ == '__main__':
                     machineReport.zone = zone
                     machineReport.rotation = btrRobotino.MPS_phi
                     sendMachineReport(machineReport)
+                btrRobotino.w_robotinoTurnAbs(45 * i)
             print(j)
             time.sleep(3)
-
+        
+        goToPoint(zoneX["S31"], zoneY["S31"], 90)
         break
 
     if (challenge == "gripping" and challengeFlag):
@@ -777,6 +777,11 @@ if __name__ == '__main__':
 
     if (refboxGamePhase == 30 and challenge == "grasping" and challengeFlag):
         startGrasping()
+        challengeFlag = False
+        break
+
+    if (challenge == "navigationTest" and challengeFlag):
+        startNavigation()
         challengeFlag = False
         break
 
