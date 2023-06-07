@@ -1,6 +1,7 @@
 #!/bin/bash
 ##
-HOME_DIR="/home/robotino"
+USER_NAME=`id -u -n`
+HOME_DIR="/home/$USER_NAME"
 REFBOX_DIR="$HOME_DIR/rcll-refbox/bin"
 BTR_DIR="$HOME_DIR/git/btr2023"
 GAME_DIR="bordeaux2023"
