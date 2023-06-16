@@ -94,18 +94,17 @@ Odometry::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	// the Gazebo node
 	this->rosNode.reset(new ros::NodeHandle(clientName.c_str()));
 	// Create a named topic, and subscribe to it.
-	ros::SubscribeOptions so =
-	  ros::SubscribeOptions::create<nav_msgs::Odometry>(
-	      "/" + this->model_->GetName() + "/setOdometry",
-	      1,
-	      boost::bind(&Odometry::OnRosMsg, this, _1),
+	ros::AdvertiseServiceOptions aso =
+	  ros::AdvertiseServiceOptions::create<robotino_msgs::ResetOdometry>(
+	      "/" + this->model_->GetName() + "/reset_odometry",
+	      boost::bind(&Odometry::OnRosMsg, this, _1, _2),
 	      ros::VoidPtr(), &this->rosQueue);
-	this->rosSub = this->rosNode->subscribe(so);
+	this->rosAdv = this->rosNode->advertiseService(aso);
 
 	// Spin up the queue helper thread.
 	this->rosQueueThread =
 	  std::thread(std::bind(&Odometry::QueueThread, this));
-	printf("Subscribe %s%s%s\n", "/", this->model_->GetName().c_str(), "/setOdometry");
+	printf("AdvertiseService %s%s%s\n", "/", this->model_->GetName().c_str(), "/reset_odometry");
 
 	this->odom_pub = this->rosNode->advertise<nav_msgs::Odometry>("/"+this->model_->GetName()+"/odom", 50);
 	printf("Publish /%s%s\n", this->model_->GetName().c_str(), "/odom");
@@ -232,19 +231,21 @@ Odometry::send_position()
 // of the Velodyne.
 // void
 // Motor::OnRosMsg(const std_msgs::Float32ConstPtr &_msg)
-void
-Odometry::OnRosMsg(const nav_msgs::OdometryConstPtr &_msg)
+//void
+//Odometry::OnRosMsg(const nav_msgs::OdometryConstPtr &_msg)
+bool
+Odometry::OnRosMsg(robotino_msgs::ResetOdometry::Request &req,
+                   robotino_msgs::ResetOdometry::Response &res)
 {
         // this->SetVelocity(_msg->data);
-	geometry_msgs::PoseWithCovariance  pose_  = _msg->pose;
-	geometry_msgs::TwistWithCovariance twist_ = _msg->twist;
 
 	boost::mutex::scoped_lock lock(readingsMutex);
- 	estimate_x      = pose_.pose.position.x;
-	estimate_y      = pose_.pose.position.y;
+ 	estimate_x      = req.x;
+	estimate_y      = req.y;
 	// estimate_omega  = pose_.pose.position.z;
-	estimate_omega	= twist_.twist.angular.z;
+	estimate_omega	= req.phi;
 	last_sent_time_ = model_->GetWorld()->GZWRAP_SIM_TIME().Double();
+	return true;
 }
 
 /// \brief ROS helper function that processes messages

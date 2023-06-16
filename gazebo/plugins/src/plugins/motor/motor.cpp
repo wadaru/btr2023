@@ -74,7 +74,7 @@ Motor::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 
 	// subscriber for ROS
 	// Initialize ros, if it has not already bee initialized.
-	std::string clientName= "gazsim_" + this->model_->GetName();
+	std::string clientName= "gazsim_mtr_" + this->model_->GetName();
 	if (!ros::isInitialized())
 	{
 	  int argc = 0;

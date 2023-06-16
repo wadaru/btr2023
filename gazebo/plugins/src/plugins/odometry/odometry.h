@@ -35,6 +35,7 @@
 #include "ros/subscribe_options.h"
 #include <thread>
 #include <tf/transform_broadcaster.h>
+#include "ResetOdometry.h"
 
 namespace gazebo {
 /**
@@ -89,10 +90,13 @@ private:
 
 	ros::Publisher odom_pub;
 	std::unique_ptr<ros::NodeHandle> rosNode;
-	ros::Subscriber rosSub;
+	ros::ServiceServer rosAdv;
 	ros::CallbackQueue rosQueue;
 	std::thread rosQueueThread;
-	void OnRosMsg(const nav_msgs::OdometryConstPtr &_msg);
+	// boost::shared_ptr<boost::thread> rosQueueThread;
+	// void OnRosMsg(const nav_msgs::OdometryConstPtr &_msg);
+	bool OnRosMsg(robotino_msgs::ResetOdometry::Request &req,
+                      robotino_msgs::ResetOdometry::Response &res);
 	void QueueThread();
 	ros::Time current_time, last_time;
 	ros::Rate r();
