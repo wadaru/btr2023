@@ -45,7 +45,7 @@ if [ ! -d $BTR_2023 ]; then
 	echo "please change the GAZEBO_WORLD_PATH to $GAZEBO_RCLL/worlds/btr/*"
 	for PLUGIN in motor odometry; do
 		rm $GAZEBO_RCLL/plugins/src/plugins/$PLUGIN -r
-		ln -s $BTR_CODE/gazebo/btr/plugins/src/pluging/$PLUGIN $GAZEBO_RCLL/plugins/src/plugins/
+		ln -s $BTR_CODE/gazebo/btr/plugins/src/plugins/$PLUGIN $GAZEBO_RCLL/plugins/src/plugins/
 	done
 	rm $GAZEBO_RCLL/CMakeLists.txt 
 	ln -s $BTR_CODE/gazebo/btr/CMakeLists.txt $GAZEBO_RCLL/
