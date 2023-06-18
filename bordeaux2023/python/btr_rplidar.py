@@ -9,14 +9,20 @@ THRESHOLD_ANGLE = 20
 
 import rospy
 import math
+import sys
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty, EmptyResponse
 
+topicName = ""
 #
 def scanDistance(deg):
-  return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360) % 360))]
+  global topicName
+  if (topicName == ""):
+    return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360) % 360))]
+  else:
+    return scanData.ranges[int(len(scanData.ranges) / 360 * (((deg + 180) + 360) % 360))]
 
 #
 def polarToPoint(distance, angle):
@@ -107,22 +113,27 @@ def btrScanStop(self):
 # main
 #
 if __name__ == '__main__':
-  # args = sys.argv
-
+  args = sys.argv
+  topicName = ""
+  nodeName = "btr_scan"
+  if (len(args) >= 2):
+    if ( args[1] == "gazebo" or args[1] == "-g" or args[1] == "--gazebo"):
+      topicName = "/robotino" + str(args[2]) 
+      nodeName = "robotino_scan" + str(args[2])
   scanFlag = False
   centerPoint = Point()
   closePoint = Point()
   leftPoint = Point()
   rightPoint = Point()
 
-  rospy.init_node('btr_scan')
-  sub01 = rospy.Subscriber("/scan", LaserScan, laserScan)
-  srv01 = rospy.Service("/btr/scan_start", Empty, btrScanStart)
-  srv02 = rospy.Service("/btr/scan_stop", Empty, btrScanStop)
-  pub00 = rospy.Publisher("/btr/centerPoint", Point, queue_size = 10)
-  pub01 = rospy.Publisher("/btr/closePoint", Point, queue_size = 10)
-  pub02 = rospy.Publisher("/btr/leftPoint", Point, queue_size = 10)
-  pub03 = rospy.Publisher("/btr/rightPoint", Point, queue_size = 10)
+  rospy.init_node(nodeName)
+  sub01 = rospy.Subscriber(topicName + "/scan", LaserScan, laserScan)
+  srv01 = rospy.Service(topicName + "/btr/scan_start", Empty, btrScanStart)
+  srv02 = rospy.Service(topicName + "/btr/scan_stop", Empty, btrScanStop)
+  pub00 = rospy.Publisher(topicName + "/btr/centerPoint", Point, queue_size = 10)
+  pub01 = rospy.Publisher(topicName + "/btr/closePoint", Point, queue_size = 10)
+  pub02 = rospy.Publisher(topicName + "/btr/leftPoint", Point, queue_size = 10)
+  pub03 = rospy.Publisher(topicName + "/btr/rightPoint", Point, queue_size = 10)
   rate = rospy.Rate(10)
 
   # rospy.spin()

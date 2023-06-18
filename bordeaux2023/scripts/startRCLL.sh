@@ -5,15 +5,16 @@ HOME_DIR="/home/$USER_NAME"
 REFBOX_DIR="$HOME_DIR/rcll-refbox/bin"
 BTR_DIR="$HOME_DIR/git/btr2023"
 GAME_DIR="bordeaux2023"
-TERM="gnome-terminal -- bash -c "
- 
+TERM="gnome-terminal --tab -- bash -c "
+NEWTERM="gnome-terminal --window --maximize -- bash -c "
+
 SCRIPT_DIR="$BTR_DIR/$GAME_DIR/scripts"
 PYTHON_DIR="$BTR_DIR/$GAME_DIR/python"
 PICTURES_DIR="$BTR_DIR/$GAME_DIR/pictures"
 RPLIDAR_DIR="$HOME_DIR/catkin_ws/src/rplidar_ros/launch"
 ROBOTINO_DIR="$HOME_DIR/catkin_ws/src/robotino_node/launch"
 
-for PROGNAME in roscore; do
+for PROGNAME in roscore gzclient gzserver gazebo; do
 	killall $PROGNAME 2> /dev/null
 done
 
@@ -25,13 +26,39 @@ if [ ! -d $PICTURES_DIR ]; then
 	mkdir $PICTURES_DIR
 fi
 
-$TERM "bash -c roscore" &
-sleep 1
-$TERM "echo rosRcllRefBoxNetwork.sh; sleep 1; cd $SCRIPT_DIR; bash -c ./rosRcllRefBoxNetwork.sh; bash" &
-$TERM "echo robotino_node; sleep 1; cd $ROBOTINO_DIR; roslaunch robotino_node.launch hostname:=127.0.1.1; bash" &
-$TERM "echo rplidar.launch; sleep 1; cd $RPLIDAR_DIR; roslaunch rplidar_a3.launch; bash" &
-$TERM "echo btr_rplidar.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py; bash" &
-$TERM "echo btr_camera.py; sleep 1; cd $PYTHON_DIR; python3 ./btr_camera.py; bash" &
-$TERM "echo btr_aruco.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_aruco.py; bash" &
-$TERM "echo btr_cobotta_ros.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_cobotta_ros.py; bash" &
+if [ "$1" = "help" -o "$1" = "-h" -o "$1" = "--help" ]; then
+	echo << EOF
+usage: $0 [OPTION] [ROBOTNUMBER]
+ -h, --help, help	give this help list
+ -g, --gazebo, gazebo   run gazebo simulator environment using ROBOTNUMBER as its robot number
+EOF
+	exit
+fi
+if [ "$1" = "gazebo" -o "$1" = "-g" -o "$1" = "--gazebo" ]; then
+	GAZEBO="true"
+fi
+
+
+COMMAND="$COMMAND $TERM \\\"roscore\\\";"
+
+COMMAND="$COMMAND $TERM \\\"echo rosRcllRefBoxNetwork.sh; sleep 1; cd $SCRIPT_DIR; bash -c ./rosRcllRefBoxNetwork.sh\\\";"
+if [ "${GAZEBO}" ]; then
+	COMMAND="$COMMAND $TERM \\\"echo refbox; cd $REFBOX_DIR; ./llsf-refbox\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo refbox-shell; cd $REFBOX_DIR; ./llsf-refbox-shell\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo gazebo; sleep 3; rosrun gazebo_ros gazebo $GAZEBO_WORLD_PATH\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py gazebo 1; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py gazebo 1\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py gazebo 2; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py gazebo 2\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py gazebo 3; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py gazebo 3\\\";"
+else
+	COMMAND="$COMMAND $TERM \\\"echo robotino_node; sleep 1; cd $ROBOTINO_DIR; roslaunch robotino_node.launch hostname:=127.0.1.1; bash\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo rplidar.launch; sleep 1; cd $RPLIDAR_DIR; roslaunch rplidar_a3.launch; bash\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py; bash\\\";"
+fi
+COMMAND="$COMMAND $TERM \\\"echo btr_camera.py; sleep 1; cd $PYTHON_DIR; python3 ./btr_camera.py $1 $2; bash\\\";"
+COMMAND="$COMMAND $TERM \\\"echo btr_aruco.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_aruco.py $1 $2; bash\\\";"
+COMMAND="$COMMAND $TERM \\\"echo btr_cobotta_ros.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_cobotta_ros.py $1 $2; bash\\\";"
+
+COMMAND="$NEWTERM \"$COMMAND\""
+echo $COMMAND
+eval $COMMAND
 popd
