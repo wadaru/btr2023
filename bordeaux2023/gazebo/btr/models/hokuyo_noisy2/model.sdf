@@ -36,10 +36,10 @@
         <ray>
           <scan>
             <horizontal>
-              <samples>640</samples>
+              <samples>360</samples>
               <resolution>1</resolution>
-              <min_angle>-2.26889</min_angle>
-              <max_angle>2.268899</max_angle>
+              <min_angle> 1.5708</min_angle>
+              <max_angle>-1.5708</max_angle>
             </horizontal>
           </scan>
           <range>
@@ -60,7 +60,7 @@
 	<plugin name="laser" filename="libgazebo_ros_laser.so">
 	  <topicName>scan</topicName>
 	  <frameName>laser_link</frameName>
-	  <robotNamespace>robotino3</robotNamespace>
+	  <robotNamespace>robotino2</robotNamespace>
 	</plugin> 
         <always_on>1</always_on>
         <update_rate>30</update_rate>
