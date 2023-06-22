@@ -232,15 +232,26 @@ def robotinoOdometry(data):
 
 def goToPoint(x, y, phi):
     btrRobotino.w_robotinoMove(0, 0)
+    btrRobotino.w_waitOdometry()
     nowX = btrOdometry.pose.pose.position.x
     nowY = btrOdometry.pose.pose.position.y
     nowPhi = btrOdometry.pose.pose.position.z
     dist = ((x - nowX)**2 + (y - nowY)**2) **0.5
-    turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
-    print(nowX, nowY, nowPhi, "=>", x, y, phi)
-    print(turn, turn - nowPhi)
-    btrRobotino.w_robotinoTurn(turn - nowPhi)
-    btrRobotino.w_robotinoMove(dist, 0)
+    # print(dist)
+    if (dist > 0.30):
+      turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
+      print(nowX, nowY, nowPhi, "=>", x, y, phi)
+      # print(turn, turn - nowPhi)
+      btrRobotino.w_robotinoTurn(turn - nowPhi)
+      btrRobotino.w_robotinoMove(dist, 0)
+    else:
+      moveX = x - nowX
+      moveY = y - nowY
+      # print(moveX, moveY, nowPhi)
+      rad = math.radians(nowPhi)
+      distX = moveX * math.cos(-rad) - moveY * math.sin(-rad)
+      distY = moveX * math.sin(-rad) + moveY * math.cos(-rad)
+      btrRobotino.w_robotinoMove(distX, distY)
     nowPhi = btrOdometry.pose.pose.position.z
     # print(phi, phi - nowPhi)
     btrRobotino.w_robotinoTurn(phi - nowPhi)
@@ -445,6 +456,7 @@ def makeNextPoint(destination):
     robotReal = Pose2D()
     robotZone = Pose2D()
     point = Pose2D()
+    btrRobotino.w_waitOdometry()
     robotReal.x = btrOdometry.pose.pose.position.x
     robotReal.y = btrOdometry.pose.pose.position.y
 
@@ -639,7 +651,8 @@ if __name__ == '__main__':
 
   print(pose.x, pose.y, pose.theta)
   btrRobotino.w_resetOdometry(pose)
-  time.sleep(3)
+  # time.sleep(3)
+  btrRobotino.w_waitOdometry()
 
   print(challenge)
   challengeFlag = True
@@ -835,7 +848,14 @@ if __name__ == '__main__':
                 goToPoint(zoneX["51"], zoneY["51"], 90)
                 goToPoint(zoneX["52"], zoneY["52"],-90)
 
+    if ( challenge == "test" and challengeFlag):
+        challengeFlag = False
+        sendBeacon()
+        goToPoint(zoneX["1031"], zoneY["1031"], 90)
+        goToPoint(zoneX["1032"], zoneY["1032"],-90)
+        goToPoint(zoneX["1031"], zoneY["1031"], 90)
 
+    sendBeacon()
     rate.sleep()
 
 

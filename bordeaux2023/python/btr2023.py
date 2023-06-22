@@ -31,8 +31,8 @@ from robotino_msgs.srv import ResetOdometry
 # angular max velocity is 1.0[rad/s?] and min is 0.01
 min_mps_distance = 0.07
 camera_offset = 0.1
-turn_angle    = numpy.array([-999, -20, -10,   -5,   -2, -0.2, 0.1,     2,     5,    10,   20,  999])
-turn_velocity = numpy.array([  5, 0.2, 0.02, 0.02, 0.02,    0,   0,- 0.02, -0.02, -0.02, -0.2, -5])
+turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, 0.05,     5,    10,   15,   25, 999])
+turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,     0,    0,- 0.02, -0.02, -0.1, -1.0,  -1])
 
 go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
 go_velocity = numpy.array([ -0.1, -0.1 , -0.01, -0.01 ,     0,    0, 0.01 , 0.01, 0.1 ,  0.1])
@@ -101,6 +101,11 @@ class btr2023(object):
     def run(self):
         print("run")
 
+    def w_waitOdometry(self):
+        seq = self.btrOdometry.header.seq
+        while (seq == self.btrOdometry.header.seq):
+          self.rate.sleep()
+
     def w_resetOdometry(self, data):
         odometry = ResetOdometry()
         pose = Pose2D()
@@ -148,7 +153,7 @@ class btr2023(object):
             else:
                 v.y = velocity1(diff_y)
             v.theta = 0
-            print(diff_x, diff_y)
+            # print(diff_x, diff_y)
             self.w_setVelocity(v)
             if (v.x == 0) and (v.y == 0):
                 break
@@ -205,7 +210,8 @@ class btr2023(object):
             v.theta = -velocity1(diff)
             self.w_setVelocity(v)
             # print(targetAngle, self.btrOdometry.pose.pose.position.z, diff, v)
-            if ((-3 < diff) and (diff < 3)):
+            # if ((-3 < diff) and (diff < 3)):
+            if (v.theta == 0):
                 break
         v.theta = 0
         self.w_setVelocity(v)
@@ -244,7 +250,7 @@ class btr2023(object):
                 
         velocityY = interpolate.interp1d(move_distance, move_velocity)
         while True:
-            dist = self.leftPoint.y + self.rightPoint.y
+            dist = -(self.leftPoint.y + self.rightPoint.y)
             v = Pose2D()
             v.x = 0
             if (math.isnan(dist) or math.isinf(dist)):

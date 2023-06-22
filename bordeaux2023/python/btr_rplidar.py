@@ -31,7 +31,7 @@ def polarToPoint(distance, angle):
   # point.x = distance * math.cos(radian)
   # point.y = distance * math.sin(radian)
   point.x = distance * math.sin(radian)
-  point.y = distance * -math.cos(radian)
+  point.y = distance * math.cos(radian)
   point.z = 0
   return point
 
