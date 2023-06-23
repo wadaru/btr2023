@@ -148,7 +148,7 @@ class btr2023(object):
             else:
                 v.y = velocity1(diff_y)
             v.theta = 0
-            print(diff_x, diff_y)
+            print(diff_x, diff_y, theta)
             self.w_setVelocity(v)
             if (v.x == 0) and (v.y == 0):
                 break

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #!/usr/bin/python
 
-START_ANGLE = -180 # -90
-END_ANGLE = 0 # 90
+START_ANGLE = -90 # -90
+END_ANGLE = 90 # 90
 START_EDGE_ANGLE = -120
 END_EDGE_ANGLE = -60
 THRESHOLD_ANGLE = 20
@@ -27,7 +27,7 @@ def scanDistance(deg):
 #
 def polarToPoint(distance, angle):
   point = Point()
-  radian = math.radians(angle + START_ANGLE)
+  radian = math.radians(angle - START_ANGLE)
   # point.x = distance * math.cos(radian)
   # point.y = distance * math.sin(radian)
   point.x = distance * math.sin(radian)
@@ -70,6 +70,8 @@ def calcPoint():
   minDistance = scanDistance((START_ANGLE + END_ANGLE) / 2)
   minAngle = (START_ANGLE + END_ANGLE) / 2
   centerPoint = polarToPoint(minDistance, minAngle)
+  print(minDistance, minAngle)
+  print(len(scanData.ranges) / 360 , (((minAngle + 180 + 45) + 360) % 360))
 
   for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
     if (minDistance > scanDistance(i)):

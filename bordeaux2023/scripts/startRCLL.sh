@@ -59,6 +59,6 @@ COMMAND="$COMMAND $TERM \\\"echo btr_aruco.py; sleep 2; cd $PYTHON_DIR; python3 
 COMMAND="$COMMAND $TERM \\\"echo btr_cobotta_ros.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_cobotta_ros.py $1 $2; bash\\\";"
 
 COMMAND="$NEWTERM \"$COMMAND\""
-echo $COMMAND
+# echo $COMMAND
 eval $COMMAND
 popd
