@@ -92,8 +92,9 @@ private:
 	std::unique_ptr<ros::NodeHandle> rosNode;
 	ros::ServiceServer rosAdv;
 	ros::CallbackQueue rosQueue;
-	std::thread rosQueueThread;
+	// std::thread rosQueueThread;
 	// boost::shared_ptr<boost::thread> rosQueueThread;
+	boost::thread rosQueueThread;
 	// void OnRosMsg(const nav_msgs::OdometryConstPtr &_msg);
 	bool OnRosMsg(robotino_msgs::ResetOdometry::Request &req,
                       robotino_msgs::ResetOdometry::Response &res);

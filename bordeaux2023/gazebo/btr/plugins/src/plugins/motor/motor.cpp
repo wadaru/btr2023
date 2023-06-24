@@ -97,8 +97,11 @@ Motor::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	this->rosSub = this->rosNode->subscribe(so);
 
 	// Spin up the queue helper thread.
-	this->rosQueueThread =
-	  std::thread(std::bind(&Motor::QueueThread, this));
+	// this->rosQueueThread =
+	//  std::thread(std::bind(&Motor::QueueThread, this));
+	this->rosQueueThread = 
+		boost::thread(boost::bind(&Motor::QueueThread, this));
+
 	printf("Subscribe %s%s%s\n", "/", this->model_->GetName().c_str(), "/cmd_vel");
 }
 
@@ -158,7 +161,7 @@ Motor::OnRosMsg(const geometry_msgs::TwistConstPtr &_msg)
         vx_     = _msg->linear.x;
         vy_     = _msg->linear.y;
         vomega_ = _msg->angular.z;
-	// printf("Got MotorMove Msg!!! %f %f %f\n", vx_, vy_, vomega_);
+	printf("Got MotorMove Msg!!! %f %f %f\n", vx_, vy_, vomega_);
 }
 
 /// \brief ROS helper function that processes messages

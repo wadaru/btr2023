@@ -78,7 +78,8 @@ private:
 	std::unique_ptr<ros::NodeHandle> rosNode;
 	ros::Subscriber rosSub;
 	ros::CallbackQueue rosQueue;
-	std::thread rosQueueThread;
+	// std::thread rosQueueThread;
+	boost::thread rosQueueThread;
 	// void OnRosMsg(const std_msgs::Float32ConstPtr &_msg);
 	void OnRosMsg(const geometry_msgs::TwistConstPtr &_msg);
 	void QueueThread();

@@ -845,8 +845,12 @@ if __name__ == '__main__':
             challengeFlag = False
             if (refboxTime.sec <= 180): # for exploration
                 print("GoToExploration")
-                goToPoint(zoneX["51"], zoneY["51"], 90)
-                goToPoint(zoneX["52"], zoneY["52"],-90)
+                goToPoint(zoneX["51"], zoneY["51"],  90)
+                goToPoint(zoneX["52"], zoneY["52"],   0)
+                goToPoint(zoneX["62"], zoneY["62"],-180)
+                goToPoint(zoneX["52"], zoneY["52"], -90)
+                goToPoint(zoneX["51"], zoneY["51"],  90)
+
 
     if ( challenge == "test" and challengeFlag):
         challengeFlag = False

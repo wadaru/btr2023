@@ -42,7 +42,7 @@ Odometry::~Odometry()
 	this->rosQueue.clear();
 	this->rosQueue.disable();
 	this->rosNode->shutdown();
-	this->rosQueueThread.join();
+	// this->rosQueueThread.join();
 
 }
 
@@ -100,8 +100,6 @@ Odometry::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	// Create our ROS node. This acts in a similar manner to
 	// the Gazebo node
 	this->rosNode.reset(new ros::NodeHandle(clientName.c_str()));
-	
-	printf("AdvertiseService %s%s%s\n", "/", this->model_->GetName().c_str(), "/reset_odometry");
 
         this->odom_pub = this->rosNode->advertise<nav_msgs::Odometry>("/"+this->model_->GetName()+"/odom", 50);
         printf("Publish /%s%s\n", this->model_->GetName().c_str(), "/odom");
@@ -116,11 +114,15 @@ Odometry::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	      boost::bind(&Odometry::OnRosMsg, this, _1, _2),
 	      ros::VoidPtr(), &this->rosQueue);
 	this->rosAdv = this->rosNode->advertiseService(aso);
+	printf("AdvertiseService %s%s%s\n", "/", this->model_->GetName().c_str(), "/reset_odometry");
+
 
 	// Spin up the queue helper thread.
 	// sleep(1);
+	// this->rosQueueThread =
+	//   std::thread(std::bind(&Odometry::QueueThread, this));
 	this->rosQueueThread =
-	  std::thread(std::bind(&Odometry::QueueThread, this));
+	  boost::thread(boost::bind(&Odometry::QueueThread, this));
 
 }
 
@@ -181,22 +183,25 @@ Odometry::send_position()
 	float vecY = linearVel.GZWRAP_Y;
 
 	//rotate vector by current robot angle
-	float cs = cos(estimate_omega * 0);
-	float sn = sin(estimate_omega * 0);
+	float cs = cos(-estimate_omega * 1.0 + 1.5708 * 1.0);
+	float sn = sin(-estimate_omega * 1.0 + 1.5708 * 1.0);
 	float tx = vecX * cs - vecY * sn;
 	float ty = -(vecX * sn + vecY * cs);
-	// printf("estimate : %f, %f ,%f\n", vecX, vecY, estimate_omega);
+	printf("estimate : %f, %f ,%f\n", tx, ty, estimate_omega);
 
 	// now update robot's position
 	{
-		boost::mutex::scoped_lock lock(readingsMutex);
+		// boost::mutex::scoped_lock lock(readingsMutex);
 		estimate_x += tx * elapsedSeconds;
 		estimate_y += ty * elapsedSeconds;
 		estimate_omega += angularVel.GZWRAP_Z * elapsedSeconds;
+		// printf("angularVel.z %f, %f, %f\n", angularVel.GZWRAP_Z, elapsedSeconds, angularVel.GZWRAP_Z * elapsedSeconds);
+		// printf("linearVel.Z %f\n", linearVel.GZWRAP_Z);
 		if (estimate_omega < -M_PI)
 			estimate_omega = 2 * M_PI - estimate_omega;
 		else if (estimate_omega > M_PI)
 			estimate_omega = -2 * M_PI + estimate_omega;
+		// printf("estimate_omega: %f\n", estimate_omega);
 	}
 
 	if (odometry_pub_->HasConnections()) {
@@ -255,6 +260,7 @@ Odometry::OnRosMsg(robotino_msgs::ResetOdometry::Request &req,
 	estimate_y      = req.y;
 	// estimate_omega  = pose_.pose.position.z;
 	estimate_omega	= req.phi;
+	printf("%f\n", req.phi);
 	last_sent_time_ = model_->GetWorld()->GZWRAP_SIM_TIME().Double();
 	return true;
 }
@@ -263,12 +269,14 @@ Odometry::OnRosMsg(robotino_msgs::ResetOdometry::Request &req,
 void
 Odometry::QueueThread()
 {
-  static const double timeout = 0.00;
+  // static const double timeout = 0.01;
   printf("start queueThread\n");
-  printf("timeout: %lf\n", timeout);
   while (this->rosNode->ok())
   {
-    this->rosQueue.callAvailable(ros::WallDuration(timeout));
-    // printf("QueueThread: %d\n", this->rosNode->ok());
+    printf("Odometry::QueueThread\n");
+    // this->rosQueue.callAvailable(ros::WallDuration(timeout));
+    this->rosQueue.callAvailable();
+    printf("QueueThread: %d\n", this->rosNode->ok());
   }
+  printf("QueueThread: finished\n");
 }

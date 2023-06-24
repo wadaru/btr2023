@@ -31,8 +31,8 @@ from robotino_msgs.srv import ResetOdometry
 # angular max velocity is 1.0[rad/s?] and min is 0.01
 min_mps_distance = 0.07
 camera_offset = 0.1
-turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, 0.05,     5,    10,   15,   25, 999])
-turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,     0,    0,- 0.02, -0.02, -0.1, -1.0,  -1])
+turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,    10,   15,   25, 999])
+turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,  0.02,     0,    0, -0.02, -0.02, -0.02, -0.1, -1.0,  -1])
 
 go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
 go_velocity = numpy.array([ -0.1, -0.1 , -0.01, -0.01 ,     0,    0, 0.01 , 0.01, 0.1 ,  0.1])
