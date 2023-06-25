@@ -161,7 +161,7 @@ Motor::OnRosMsg(const geometry_msgs::TwistConstPtr &_msg)
         vx_     = _msg->linear.x;
         vy_     = _msg->linear.y;
         vomega_ = _msg->angular.z;
-	printf("Got MotorMove Msg!!! %f %f %f\n", vx_, vy_, vomega_);
+	// printf("Got MotorMove Msg!!! %f %f %f\n", vx_, vy_, vomega_);
 }
 
 /// \brief ROS helper function that processes messages

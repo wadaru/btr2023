@@ -46,16 +46,18 @@ if [ "${GAZEBO}" ]; then
 	COMMAND="$COMMAND $TERM \\\"echo refbox; cd $REFBOX_DIR; ./llsf-refbox\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo refbox-shell; cd $REFBOX_DIR; ./llsf-refbox-shell\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo gazebo; sleep 3; rosrun gazebo_ros gazebo $GAZEBO_WORLD_PATH\\\";"
-	COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py gazebo 1; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py gazebo 1\\\";"
-	COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py gazebo 2; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py gazebo 2\\\";"
-	COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py gazebo 3; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py gazebo 3\\\";"
+	for ROBOTNO in 1 2 3; do
+		COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py gazebo $ROBOTNO; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py gazebo $ROBOTNO\\\";"
+		COMMAND="$COMMAND $TERM \\\"echo btr_gazebo_camera.py gazezbo $ROBOTNO; sleep 1; cd $PYTHON_DIR; python3 ./btr_gazebo_camera.py gazebo $ROBOTNO; bash\\\";"
+		COMMAND="$COMMAND $TERM \\\"echo btr_aruco.py gazebo $ROBOTNO; sleep 2; cd $PYTHON_DIR; python3 ./btr_aruco.py gazebo $ROBOTNO; bash\\\";"
+	done
 else
 	COMMAND="$COMMAND $TERM \\\"echo robotino_node; sleep 1; cd $ROBOTINO_DIR; roslaunch robotino_node.launch hostname:=127.0.1.1; bash\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo rplidar.launch; sleep 1; cd $RPLIDAR_DIR; roslaunch rplidar_a3.launch; bash\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py; bash\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo btr_camera.py; sleep 1; cd $PYTHON_DIR; python3 ./btr_camera.py $1 $2; bash\\\";"
+	COMMAND="$COMMAND $TERM \\\"echo btr_aruco.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_aruco.py $1 $2; bash\\\";"
 fi
-COMMAND="$COMMAND $TERM \\\"echo btr_camera.py; sleep 1; cd $PYTHON_DIR; python3 ./btr_camera.py $1 $2; bash\\\";"
-COMMAND="$COMMAND $TERM \\\"echo btr_aruco.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_aruco.py $1 $2; bash\\\";"
 COMMAND="$COMMAND $TERM \\\"echo btr_cobotta_ros.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_cobotta_ros.py $1 $2; bash\\\";"
 
 COMMAND="$NEWTERM \"$COMMAND\""

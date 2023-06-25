@@ -3,6 +3,7 @@ from cv2 import aruco
 import numpy as np
 import time
 import math
+import sys
 import rospy
 import rosservice
 from std_srvs.srv import Empty, EmptyResponse
@@ -123,10 +124,18 @@ def tagLocation(data):
     return tagLocation
 
 if __name__ == "__main__":
+    args = sys.argv
+    topicName = ""
+    nodeName = "btr_aruco"
+    if (len(args) >= 2):
+      if ( args[1] == "gazebo" or args[1] == "-g" or args[1] == "--gazebo"):
+        topicName = "/robotino" + str(args[2])
+        nodeName = "robotino_aruco" + str(args[2])
+
     initAruco()
-    rospy.init_node('btr_aruco')
-    srv01 = rospy.Service('btr_aruco/TagInfo', TagInfo, getAruco)
-    srv02 = rospy.Service('btr_aruco/TagLocation', TagLocation, tagLocation)
+    rospy.init_node(nodeName)
+    srv01 = rospy.Service(topicName + '/btr_aruco/TagInfo', TagInfo, getAruco)
+    srv02 = rospy.Service(topicName + '/btr_aruco/TagLocation', TagLocation, tagLocation)
     rate = rospy.Rate(10)
 
     while not rospy.is_shutdown():

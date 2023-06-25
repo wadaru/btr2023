@@ -187,7 +187,7 @@ Odometry::send_position()
 	float sn = sin(-estimate_omega * 1.0 + 1.5708 * 1.0);
 	float tx = vecX * cs - vecY * sn;
 	float ty = -(vecX * sn + vecY * cs);
-	printf("estimate : %f, %f ,%f\n", tx, ty, estimate_omega);
+	// printf("estimate : %f, %f ,%f\n", tx, ty, estimate_omega);
 
 	// now update robot's position
 	{
@@ -260,7 +260,7 @@ Odometry::OnRosMsg(robotino_msgs::ResetOdometry::Request &req,
 	estimate_y      = req.y;
 	// estimate_omega  = pose_.pose.position.z;
 	estimate_omega	= req.phi;
-	printf("%f\n", req.phi);
+	// printf("%f\n", req.phi);
 	last_sent_time_ = model_->GetWorld()->GZWRAP_SIM_TIME().Double();
 	return true;
 }
@@ -270,13 +270,13 @@ void
 Odometry::QueueThread()
 {
   // static const double timeout = 0.01;
-  printf("start queueThread\n");
+  // printf("start queueThread\n");
   while (this->rosNode->ok())
   {
-    printf("Odometry::QueueThread\n");
+    // printf("Odometry::QueueThread\n");
     // this->rosQueue.callAvailable(ros::WallDuration(timeout));
     this->rosQueue.callAvailable();
-    printf("QueueThread: %d\n", this->rosNode->ok());
+    // printf("QueueThread: %d\n", this->rosNode->ok());
   }
   printf("QueueThread: finished\n");
 }
