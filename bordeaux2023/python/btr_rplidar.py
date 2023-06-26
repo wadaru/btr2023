@@ -30,7 +30,7 @@ def polarToPoint(distance, angle):
   global topicName
   point = Point()
   if (topicName == ""):
-    radian = math.radians(angle + START_ANGLE)
+    radian = math.radians(angle)
   else:
     radian = math.radians(angle)
   # point.x = distance * math.cos(radian)
