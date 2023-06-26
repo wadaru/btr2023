@@ -41,15 +41,15 @@ fi
 
 COMMAND="$COMMAND $TERM \\\"roscore\\\";"
 
-COMMAND="$COMMAND $TERM \\\"echo rosRcllRefBoxNetwork.sh; sleep 1; cd $SCRIPT_DIR; bash -c ./rosRcllRefBoxNetwork.sh\\\";"
+COMMAND="$COMMAND $TERM \\\"echo rosRcllRefBoxNetwork.sh; sleep 7; cd $SCRIPT_DIR; bash -c ./rosRcllRefBoxNetwork.sh\\\";"
 if [ "${GAZEBO}" ]; then
 	COMMAND="$COMMAND $TERM \\\"echo refbox; cd $REFBOX_DIR; ./llsf-refbox\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo refbox-shell; cd $REFBOX_DIR; ./llsf-refbox-shell\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo gazebo; sleep 3; rosrun gazebo_ros gazebo $GAZEBO_WORLD_PATH\\\";"
 	for ROBOTNO in 1 2 3; do
-		COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py gazebo $ROBOTNO; sleep 2; cd $PYTHON_DIR; python3 ./btr_rplidar.py gazebo $ROBOTNO\\\";"
-		COMMAND="$COMMAND $TERM \\\"echo btr_gazebo_camera.py gazezbo $ROBOTNO; sleep 1; cd $PYTHON_DIR; python3 ./btr_gazebo_camera.py gazebo $ROBOTNO; bash\\\";"
-		COMMAND="$COMMAND $TERM \\\"echo btr_aruco.py gazebo $ROBOTNO; sleep 2; cd $PYTHON_DIR; python3 ./btr_aruco.py gazebo $ROBOTNO; bash\\\";"
+		COMMAND="$COMMAND $TERM \\\"echo btr_rplidar.py gazebo $ROBOTNO; sleep 7; cd $PYTHON_DIR; python3 ./btr_rplidar.py gazebo $ROBOTNO\\\";"
+		COMMAND="$COMMAND $TERM \\\"echo btr_gazebo_camera.py gazezbo $ROBOTNO; sleep 7; cd $PYTHON_DIR; python3 ./btr_gazebo_camera.py gazebo $ROBOTNO; bash\\\";"
+		COMMAND="$COMMAND $TERM \\\"echo btr_aruco.py gazebo $ROBOTNO; sleep 8; cd $PYTHON_DIR; python3 ./btr_aruco.py gazebo $ROBOTNO; bash\\\";"
 	done
 else
 	COMMAND="$COMMAND $TERM \\\"echo robotino_node; sleep 1; cd $ROBOTINO_DIR; roslaunch robotino_node.launch hostname:=127.0.1.1; bash\\\";"

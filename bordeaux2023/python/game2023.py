@@ -841,15 +841,16 @@ if __name__ == '__main__':
             
     if ( challenge == "gazebo"):
         sendBeacon()
+        print(challenge)
         if (refboxGamePhase == 30 and challengeFlag):
-            challengeFlag = False
             if (refboxTime.sec <= 180): # for exploration
+                challengeFlag = False
                 print("GoToExploration")
                 goToPoint(zoneX["51"], zoneY["51"],  90)
                 goToPoint(zoneX["52"], zoneY["52"],   0)
-                goToPoint(zoneX["62"], zoneY["62"],-180)
-                goToPoint(zoneX["52"], zoneY["52"], -90)
-                goToPoint(zoneX["51"], zoneY["51"],  90)
+                goToPoint(zoneX["62"], zoneY["62"],  90)
+                # goToPoint(zoneX["52"], zoneY["52"], -90)
+                # goToPoint(zoneX["51"], zoneY["51"],  90)
 
 
     if ( challenge == "test" and challengeFlag):

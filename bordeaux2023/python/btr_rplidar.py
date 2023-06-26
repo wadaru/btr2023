@@ -3,9 +3,9 @@
 
 START_ANGLE = -90 # -90
 END_ANGLE = 90 # 90
-START_EDGE_ANGLE = -120
-END_EDGE_ANGLE = -60
-THRESHOLD_ANGLE = 20
+START_EDGE_ANGLE = -60 # -120
+END_EDGE_ANGLE = 60 # -60
+THRESHOLD_ANGLE = 5 
 
 import rospy
 import math
@@ -22,17 +22,22 @@ def scanDistance(deg):
   if (topicName == ""):
     return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360) % 360))]
   else:
-    return scanData.ranges[int(len(scanData.ranges) / 360 * (((deg + 180) + 360) % 360))]
+    # the range of gazebo's laser is from START_ANGLE to END_ANGLE?
+    return scanData.ranges[int(len(scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE))]
 
 #
 def polarToPoint(distance, angle):
+  global topicName
   point = Point()
-  radian = math.radians(angle - START_ANGLE)
+  if (topicName == ""):
+    radian = math.radians(angle + START_ANGLE)
+  else:
+    radian = math.radians(angle)
   # point.x = distance * math.cos(radian)
   # point.y = distance * math.sin(radian)
-  point.x = distance * math.sin(radian)
-  point.y = distance * math.cos(radian)
-  point.z = 0
+  point.x = distance * math.cos(radian)
+  point.y = distance * math.sin(radian)
+  point.z = angle + 0
   return point
 
 #
@@ -50,12 +55,10 @@ def findEdge(startAngle, angleStep):
 
   while True:
     nowPoint = polarToPoint(scanDistance(i), i)
-    angle = calcAngle(oldPoint, nowPoint)
-    if (oldAngle == -360):
-      oldAngle = angle
-    elif (abs(oldAngle - angle) > THRESHOLD_ANGLE):
-      break
     if (math.isinf(scanDistance(i))):
+      break
+    dist = scanDistance(i - angleStep) - scanDistance(i)
+    if (dist > 0.10):
       break
     i = i + angleStep
     if (i < -180 or i > 180):
@@ -70,8 +73,8 @@ def calcPoint():
   minDistance = scanDistance((START_ANGLE + END_ANGLE) / 2)
   minAngle = (START_ANGLE + END_ANGLE) / 2
   centerPoint = polarToPoint(minDistance, minAngle)
-  print(minDistance, minAngle)
-  print(len(scanData.ranges) / 360 , (((minAngle + 180 + 45) + 360) % 360))
+  # print(minDistance, minAngle)
+  # print(len(scanData.ranges) / 360 , (((minAngle + 180 + 45) + 360) % 360))
 
   for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
     if (minDistance > scanDistance(i)):
@@ -83,9 +86,10 @@ def calcPoint():
   # find the left edge and right edge
   # leftPoint = findEdge(minAngle - 1, -1)
   # rightPoint = findEdge(minAngle + 1, 1)
-  leftPoint  = findEdge(minAngle + 1,  1)
-  rightPoint = findEdge(minAngle - 1, -1)
-
+  leftPoint  = findEdge(minAngle - 1, -1)
+  rightPoint = findEdge(minAngle + 1,  1)
+  # print("centerAng:", minAngle, "left:", leftPoint.z, "right:", rightPoint.z)
+  # print("dist", ((leftPoint.x - rightPoint.x) ** 2 + (leftPoint.y - rightPoint.y) **2) ** 0.5)
 #
 def laserScan(data):
   global scanData

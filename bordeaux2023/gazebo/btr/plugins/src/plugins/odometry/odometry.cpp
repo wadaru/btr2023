@@ -269,13 +269,13 @@ Odometry::OnRosMsg(robotino_msgs::ResetOdometry::Request &req,
 void
 Odometry::QueueThread()
 {
-  // static const double timeout = 0.01;
+  static const double timeout = 0.01;
   // printf("start queueThread\n");
   while (this->rosNode->ok())
   {
     // printf("Odometry::QueueThread\n");
-    // this->rosQueue.callAvailable(ros::WallDuration(timeout));
-    this->rosQueue.callAvailable();
+    this->rosQueue.callAvailable(ros::WallDuration(timeout));
+    // this->rosQueue.callAvailable();
     // printf("QueueThread: %d\n", this->rosNode->ok());
   }
   printf("QueueThread: finished\n");

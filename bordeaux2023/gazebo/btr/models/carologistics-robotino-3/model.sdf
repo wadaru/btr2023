@@ -18,6 +18,7 @@
 	    <uri>model://C920_ros</uri>
 	    <pose>0.2 0 0.9 0 0 0</pose>
     </include>
+    <!--
     <include>
       <name>webcam_puck</name>
       <uri>model://webcam</uri>
@@ -28,6 +29,7 @@
       <uri>model://webcam</uri>
       <pose>0.1 0 0.57 0 0 0</pose>
     </include>
+    -->
     <!--
     <include>
       <name>gripper</name>
@@ -62,7 +64,7 @@
       <parent>robotino3::body</parent>
       <pose>0 0 0 0 0 0</pose>
     </joint>
-
+    <!--
     <joint name="sick_joint" type="revolute">
       <child>sick_laser::link</child>
       <parent>robotino3::body</parent>
@@ -147,6 +149,6 @@
         </limit>
       </axis>
     </joint>
-
+    -->
   </model>
 </sdf>
