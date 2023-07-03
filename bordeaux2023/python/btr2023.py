@@ -31,15 +31,27 @@ from robotino_msgs.srv import ResetOdometry
 # angular max velocity is 1.0[rad/s?] and min is 0.01
 min_mps_distance = 0.07
 camera_offset = 0.1
-turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,    10,   15,   25, 999])
-turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,  0.02,     0,    0, -0.02, -0.02, -0.02, -0.1, -1.0,  -1])
+# speed is unit/s. and interrupt is 0.1s.
+# So, the best speed is diff / 0.1
+# The unit of turn angle is Deg, but the unit of turn velocity is Rad.
+# So, the best speed is diff / 0.1 / 180 * 3.14 = diff * 0.17 (=0.15).
+# turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,    10,   15,   25, 999])
+# turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,  0.02,     0,    0, -0.02, -0.02, -0.02, -0.1, -1.0,  -1])
+turn_angle    = numpy.array([-999, -25,  -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,   10,   15,   25, 999])
+turn_velocity = numpy.array([   2, 2.0,  2.0,  1.5, 0.75,  0.02,     0,    0, -0.02, -0.75, -1.5, -2.0, -2.0,  -2])
 
+# go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
+# go_velocity = numpy.array([ -0.1, -0.1 , -0.01, -0.01 ,     0,    0, 0.01 , 0.01, 0.1 ,  0.1])
 go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
-go_velocity = numpy.array([ -0.1, -0.1 , -0.01, -0.01 ,     0,    0, 0.01 , 0.01, 0.1 ,  0.1])
+go_velocity = numpy.array([ -0.5, -0.5 , -0.20, -0.15 ,     0,    0, 0.15 , 0.20, 0.5 ,  0.5])
 
+# go_distance_fast = numpy.array([-9999, -0.02, -0.01, -0.001, -0.0009, 0, 0.001, 0.0011, 0.005, 0.010, 0.020, 9999])
+# go_velocity_fast = numpy.array([ -0.1, -0.1 , -0.1 , -0.01 ,       0, 0, 0.01 , 0.01  , 0.015, 0.1  , 0.1  ,  0.1])
 go_distance_fast = numpy.array([-9999, -0.02, -0.01, -0.001, -0.0009, 0, 0.001, 0.0011, 0.005, 0.010, 0.020, 9999])
-go_velocity_fast = numpy.array([ -0.1, -0.1 , -0.1 , -0.01 ,       0, 0, 0.01 , 0.01  , 0.015, 0.1  , 0.1  ,  0.1])
+go_velocity_fast = numpy.array([ -0.2, -0.2 , -0.1 , -0.01 ,       0, 0, 0.01 , 0.01  , 0.015, 0.1  , 0.2  ,  0.2])
 
+# move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.009, 0.009, 0.01, 0.10, 0.5, 1.0, 99999])
+# move_velocity = numpy.array([  -0.3, -0.3, -0.1, -0.05, -0.01,      0,     0, 0.01, 0.05, 0.1, 0.3, 0.3  ])
 move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.009, 0.009, 0.01, 0.10, 0.5, 1.0, 99999])
 move_velocity = numpy.array([  -0.3, -0.3, -0.1, -0.05, -0.01,      0,     0, 0.01, 0.05, 0.1, 0.3, 0.3  ])
 
@@ -81,6 +93,7 @@ class btr2023(object):
         self.sub3 = rospy.Subscriber(self.topicName + "/btr/centerPoint", Point, self.centerPoint)
         self.sub4 = rospy.Subscriber(self.topicName + "/btr/leftPoint", Point, self.leftPoint)
         self.sub5 = rospy.Subscriber(self.topicName + "/btr/rightPoint", Point, self.rightPoint)
+        self.sub6 = rospy.Subscriber(self.topicName + "/btr/fowardPoint", Point, self.forwardPoint)
         self.rate = rospy.Rate(10)
         self.pub1 = rospy.Publisher(self.topicName + "/cmd_vel", Twist, queue_size = 10)
 
@@ -88,6 +101,7 @@ class btr2023(object):
         self.centerPoint = data
         self.leftPoint = data
         self.rightPoint = data
+        self.forwardPoint = data
 
         self.startRpLidar()
 
@@ -128,11 +142,14 @@ class btr2023(object):
     def w_robotinoMove(self, x, y):
         global move_distance, move_velocity
         velocity1 = interpolate.interp1d(move_distance, move_velocity)
-        while True:
-            nowPoint = self.btrOdometry
-            # print(nowAngle.pose.pose.position.z)
-            if (nowPoint.header.seq != 0):
-                break
+        # while True:
+        #     nowPoint = self.btrOdometry
+        #     # print(nowAngle.pose.pose.position.z)
+        #     if (nowPoint.header.seq != 0):
+        #         break
+        self.w_waitOdometry()
+        nowPoint = self.btrOdometry
+        ret = True
 
         theta = nowPoint.pose.pose.position.z / 180 * math.pi
         # print("theta", theta, nowPoint.pose.pose.position.z)
@@ -154,9 +171,17 @@ class btr2023(object):
                 v.y = velocity1(diff_y)
             v.theta = 0
             # print(diff_x, diff_y)
+            if (self.forwardPoint.x < diff_x):
+                if (self.forwardPoint.x < 1.0):
+                    v.x = v.x / 1.0 * self.forwardPoint.x
+                if (self.forwardPoint.x < 0.2):
+                    v.x = 0
+                    ret = False
+                
             self.w_setVelocity(v)
             if (v.x == 0) and (v.y == 0):
-                break
+                return ret
+                # break
 
     def w_goToInputVelt(self):    # 375mm from left side(= 25 + 50*7)
         # self.w_goToWall(min_mps_distance)
@@ -379,6 +404,9 @@ class btr2023(object):
     def rightPoint(self, data):
         self.rightPoint = data
 
+    def forwardPoint(self, data):
+        self.forwardPoint = data
+
     def w_getMPSLocation(self):
         rospy.wait_for_service(self.topicName + '/btr_aruco/TagLocation')
         self.getTagLocation = rospy.ServiceProxy(self.topicName + '/btr_aruco/TagLocation', TagLocation)
@@ -394,11 +422,13 @@ class btr2023(object):
         # print("finish")
         # print(self.resp)
 
-        while True:
-            nowPoint = self.btrOdometry
-            # print(nowAngle.pose.pose.position.z)
-            if (nowPoint.header.seq != 0):
-                break
+        # while True:
+        #     nowPoint = self.btrOdometry
+        #     # print(nowAngle.pose.pose.position.z)
+        #     if (nowPoint.header.seq != 0):
+        #         break
+        self.w_waitOdometry()
+        nowPoint = self.btrOdometry
 
         theta = nowPoint.pose.pose.position.z / 180 * math.pi
         target_x = x * math.cos(theta) - y * math.sin(theta) + nowPoint.pose.pose.position.x
@@ -420,8 +450,22 @@ class btr2023(object):
         zone_y = int(abs(self.MPS_y) / 1.0) + 1
         self.MPS_zone = zone + "_Z" + str(zone_x * 10 + zone_y)
 
-#    robot.x = btrOdometry.pose.pose.position.x
-#    robot.y = btrOdometry.pose.pose.position.y
+    def w_findMPS(self):
+        self.w_getMPSLocation()
+        if (self.MPS_find == True):
+            name = machineName[self.MPS_id]
+            print(name, self.MPS_zone, self.MPS_phi)
+            machineReport.name = name[0: len(name) - 2]
+            if (name[4 : 5] == "-"):
+                machineReport.type = name[2 : 4]
+            else:
+                machineReport.type = name[2 : 5]
+                zone = int(self.MPS_zone[3 : 5])
+                if (self.MPS_zone[0: 1] == "M"):
+                    zone = -zone
+                machineReport.zone = zone
+                machineReport.rotation = self.MPS_phi
+                sendMachineReport(machineReport)
 
 # main
 #

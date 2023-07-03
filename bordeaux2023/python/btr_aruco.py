@@ -19,10 +19,10 @@ def initAruco():
     parameters = aruco.DetectorParameters_create()
 
 def getAruco(data):
-    global cap, dict_aruco, parameters, corners
+    global cap, dict_aruco, parameters, corners, topicName
     pictureInfo = PictureInfo()
-    rospy.wait_for_service('/btr_camera/picture')
-    videoCapture = rospy.ServiceProxy('/btr_camera/picture', PictureInfo)
+    rospy.wait_for_service(topicName + '/btr_camera/picture')
+    videoCapture = rospy.ServiceProxy(topicName + '/btr_camera/picture', PictureInfo)
     picture = videoCapture()
     print(picture.filename.data)
     

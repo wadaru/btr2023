@@ -1,1 +1,1 @@
-/home/ryukoku/catkin_ws/devel/include/robotino_msgs/ResetOdometryResponse.h
+/home/wataru/catkin_ws/devel/include/robotino_msgs/ResetOdometryResponse.h

@@ -69,7 +69,7 @@ def findEdge(startAngle, angleStep):
 
 #
 def calcPoint():
-  global centerPoint, closePoint, leftPoint, rightPoint
+  global centerPoint, closePoint, leftPoint, rightPoint, forwardPoint
   minDistance = scanDistance((START_ANGLE + END_ANGLE) / 2)
   minAngle = (START_ANGLE + END_ANGLE) / 2
   centerPoint = polarToPoint(minDistance, minAngle)
@@ -84,12 +84,20 @@ def calcPoint():
   closePoint = polarToPoint(minDistance, minAngle)
 
   # find the left edge and right edge
-  # leftPoint = findEdge(minAngle - 1, -1)
-  # rightPoint = findEdge(minAngle + 1, 1)
   leftPoint  = findEdge(minAngle - 1, -1)
   rightPoint = findEdge(minAngle + 1,  1)
   # print("centerAng:", minAngle, "left:", leftPoint.z, "right:", rightPoint.z)
   # print("dist", ((leftPoint.x - rightPoint.x) ** 2 + (leftPoint.y - rightPoint.y) **2) ** 0.5)
+
+  forwardPoint = polarToPoint((START_ANGLE + END_ANGLE) / 2, scanDistance(START_ANGLE + END_ANGLE) / 2)
+  radius = 0.3
+  for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
+    obstraclPoint = polarToPoint(i, scanDistance(i))
+    if (forwardPoint.x > obstaclPoint.x):
+      if (-radius < obstaclePoint.y and obstaclePoint.y < radius):
+        forwardPoint = obstaclePoint
+
+
 #
 def laserScan(data):
   global scanData
@@ -131,6 +139,7 @@ if __name__ == '__main__':
   closePoint = Point()
   leftPoint = Point()
   rightPoint = Point()
+  forwardPoint = Point()
 
   rospy.init_node(nodeName)
   sub01 = rospy.Subscriber(topicName + "/scan", LaserScan, laserScan)
@@ -140,6 +149,7 @@ if __name__ == '__main__':
   pub01 = rospy.Publisher(topicName + "/btr/closePoint", Point, queue_size = 10)
   pub02 = rospy.Publisher(topicName + "/btr/leftPoint", Point, queue_size = 10)
   pub03 = rospy.Publisher(topicName + "/btr/rightPoint", Point, queue_size = 10)
+  pub04 = rospy.Publisher(topicName + "/btr/forwardPoint", Point, queue_size = 10)
   rate = rospy.Rate(10)
 
   # rospy.spin()
@@ -152,5 +162,6 @@ if __name__ == '__main__':
       pub01.publish(closePoint)
       pub02.publish(leftPoint)
       pub03.publish(rightPoint)
+      pub04.publish(forwardPoint)
     rate.sleep()
 

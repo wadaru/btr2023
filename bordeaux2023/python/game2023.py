@@ -668,21 +668,7 @@ if __name__ == '__main__':
         goToPoint(zoneX["S33"], zoneY["S33"], 90)
         for j in range(2):
             for i in range(9):
-                btrRobotino.w_getMPSLocation()
-                if (btrRobotino.MPS_find == True):
-                    name = machineName[btrRobotino.MPS_id]
-                    print(name, btrRobotino.MPS_zone, btrRobotino.MPS_phi)
-                    machineReport.name = name[0: len(name) - 2]
-                    if (name[4 : 5] == "-"):
-                        machineReport.type = name[2 : 4]
-                    else:
-                        machineReport.type = name[2 : 5]
-                    zone = int(btrRobotino.MPS_zone[3 : 5])
-                    if (btrRobotino.MPS_zone[0: 1] == "M"):
-                        zone = -zone
-                    machineReport.zone = zone
-                    machineReport.rotation = btrRobotino.MPS_phi
-                    sendMachineReport(machineReport)
+                btrRobotino.w_findMPS()
                 btrRobotino.w_robotinoTurnAbs(45 * i)
             print(j)
             time.sleep(3)
@@ -797,15 +783,6 @@ if __name__ == '__main__':
             challengeFlag = False
             break
 
-    # send machine report for Exploration Phase
-    if (refboxGamePhase == 20):
-        if (refboxTime.sec == 10):
-            machineReport.name = "C-CS1"
-            machineReport.type = "CS"
-            machineReport.zone = -53 
-            machineReport.rotation = 210
-            sendMachineReport(machineReport)
-
     # send machine prepare command
     if (refboxGamePhase == 30 and challenge == "" ):
         # make C0
@@ -848,9 +825,10 @@ if __name__ == '__main__':
                 print("GoToExploration")
                 goToPoint(zoneX["51"], zoneY["51"],  90)
                 goToPoint(zoneX["52"], zoneY["52"],   0)
-                goToPoint(zoneX["62"], zoneY["62"],  90)
-                # goToPoint(zoneX["52"], zoneY["52"], -90)
-                # goToPoint(zoneX["51"], zoneY["51"],  90)
+                # findMPS
+                for i in range(-2, 2):
+                    btrRobotino.w_findMPS()
+                    btrRobotino.w_robotinoTurnAbs(45 * i)
 
 
     if ( challenge == "test" and challengeFlag):
