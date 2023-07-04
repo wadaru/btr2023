@@ -834,9 +834,11 @@ if __name__ == '__main__':
     if ( challenge == "test" and challengeFlag):
         challengeFlag = False
         sendBeacon()
-        goToPoint(zoneX["1031"], zoneY["1031"], 90)
-        goToPoint(zoneX["1032"], zoneY["1032"],-90)
-        goToPoint(zoneX["1031"], zoneY["1031"], 90)
+        
+        btrRobotino.w_goToOutputVelt()
+        # btrRobotino.w_goToWall(0.015 + 0.020)
+        # btrRobotino.w_parallelMPS()
+        # btrRobotino.w_findMPS()
 
     sendBeacon()
     rate.sleep()

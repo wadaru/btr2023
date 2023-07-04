@@ -35,10 +35,10 @@ camera_offset = 0.1
 # So, the best speed is diff / 0.1
 # The unit of turn angle is Deg, but the unit of turn velocity is Rad.
 # So, the best speed is diff / 0.1 / 180 * 3.14 = diff * 0.17 (=0.15).
-# turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,    10,   15,   25, 999])
-# turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,  0.02,     0,    0, -0.02, -0.02, -0.02, -0.1, -1.0,  -1])
-turn_angle    = numpy.array([-999, -25,  -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,   10,   15,   25, 999])
-turn_velocity = numpy.array([   2, 2.0,  2.0,  1.5, 0.75,  0.02,     0,    0, -0.02, -0.75, -1.5, -2.0, -2.0,  -2])
+turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,    10,   15,   25, 999])
+turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,  0.02,     0,    0, -0.02, -0.02, -0.02, -0.1, -1.0,  -1])
+# turn_angle    = numpy.array([-999, -25,  -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,   10,   15,   25, 999])
+# turn_velocity = numpy.array([   2, 2.0,  2.0,  1.5, 0.75,  0.02,     0,    0, -0.02, -0.75, -1.5, -2.0, -2.0,  -2])
 
 # go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
 # go_velocity = numpy.array([ -0.1, -0.1 , -0.01, -0.01 ,     0,    0, 0.01 , 0.01, 0.1 ,  0.1])
@@ -186,13 +186,13 @@ class btr2023(object):
     def w_goToInputVelt(self):    # 375mm from left side(= 25 + 50*7)
         # self.w_goToWall(min_mps_distance)
         self.w_goToMPSCenter()
-        self.w_robotinoMove(0, 0.025 + 0.055)
+        self.w_robotinoMove(0, 0.25 + 0.55)
         # self.w_goToWall(15)
 
     def w_goToOutputVelt(self):   # 325mm from left side (= 25 + 50*6)
         # self.w_goToWall(min_mps_distance)
         self.w_goToMPSCenter()
-        self.w_robotinoMove(0, 0.025)
+        self.w_robotinoMove(0, 0.25)
         # self.w_goToWall(15)
 
     def w_robotinoTurnAbs(self, turnAngle):
@@ -267,7 +267,7 @@ class btr2023(object):
                 self.w_goToWall(min_mps_distance)
                 # go to the front of the MPS.
                 self.w_goToMPSCenterLRF()
-            self.w_goToWall(0.015)
+            self.w_goToWall(0.15)
             self.w_parallelMPS()
 
     def w_goToMPSCenterLRF(self):
@@ -339,9 +339,10 @@ class btr2023(object):
             v.y = 0
             if (math.isnan(angle)):
                 angle = 90
-            v.theta = velocity1(angle - 90)  
+            v.theta = velocity1(90 - angle)  
 
             print("parallelMPS:", angle, v.theta)
+            # v.theta /= 30
             # if ((-0.01 < v.theta) and (v.theta < 0.01)):
             #     v.theta = 0
             # if (not(math.isnan(angle))):

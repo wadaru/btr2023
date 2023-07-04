@@ -20,7 +20,7 @@ topicName = ""
 def scanDistance(deg):
   global topicName
   if (topicName == ""):
-    return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360) % 360))]
+    return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360 - 90) % 360))]
   else:
     # the range of gazebo's laser is from START_ANGLE to END_ANGLE?
     return scanData.ranges[int(len(scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE))]
@@ -29,15 +29,17 @@ def scanDistance(deg):
 def polarToPoint(distance, angle):
   global topicName
   point = Point()
-  if (topicName == ""):
-    radian = math.radians(angle)
-  else:
-    radian = math.radians(angle)
+  # if (topicName == ""):
+  #   radian = math.radians(angle - 90)
+  #   point.z = angle - 90
+  # else:
+  radian = math.radians(angle)
+  point.z = angle
   # point.x = distance * math.cos(radian)
   # point.y = distance * math.sin(radian)
   point.x = distance * math.cos(radian)
   point.y = distance * math.sin(radian)
-  point.z = angle + 0
+  # point.z = angle + 0
   return point
 
 #
