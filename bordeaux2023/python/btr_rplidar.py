@@ -51,7 +51,8 @@ def calcAngle(pointA, pointB):
 
 #
 def findEdge(startAngle, angleStep):
-  oldPoint = polarToPoint(scanDistance(startAngle - angleStep), startAngle - angleStep)
+  startPoint = polarToPoint(scanDistance(startAngle - angleStep), startAngle - angleStep)
+  oldPoint = startPoint
   i = startAngle
   oldAngle = -360
 
@@ -59,12 +60,16 @@ def findEdge(startAngle, angleStep):
     nowPoint = polarToPoint(scanDistance(i), i)
     if (math.isinf(scanDistance(i))):
       break
-    dist = scanDistance(i - angleStep) - scanDistance(i)
-    if (dist > 0.10):
+    microAngle = calcAngle(oldPoint, nowPoint)
+    macroAngle = calcAngle(startPoint, nowPoint)
+    diff = abs(microAngle - macroAngle)
+    if (diff > 15):
+      # print("findEdge", startPoint, nowPoint, diff)
       break
     i = i + angleStep
     if (i < -180 or i > 180):
       break
+    oldPoint = nowPoint
   
   # print("findEdge: ", i - angleStep, scanDistance(i - angleStep))
   return polarToPoint(scanDistance(i - angleStep), i - angleStep)
@@ -72,9 +77,13 @@ def findEdge(startAngle, angleStep):
 #
 def calcPoint():
   global centerPoint, closePoint, leftPoint, rightPoint, forwardPoint
-  minDistance = scanDistance((START_ANGLE + END_ANGLE) / 2)
-  minAngle = (START_ANGLE + END_ANGLE) / 2
+  CENTER_ANGLE = (START_ANGLE + END_ANGLE) / 2
+  minDistance = scanDistance(CENTER_ANGLE)
+  minAngle = CENTER_ANGLE
   centerPoint = polarToPoint(minDistance, minAngle)
+  leftPoint5 = polarToPoint(scanDistance(CENTER_ANGLE + 5), CENTER_ANGLE + 5)
+  rightPoint5 = polarToPoint(scanDistance(CENTER_ANGLE - 5), CENTER_ANGLE - 5)
+  centerPoint.z = calcAngle(leftPoint5, rightPoint5)
   # print(minDistance, minAngle)
   # print(len(scanData.ranges) / 360 , (((minAngle + 180 + 45) + 360) % 360))
 
@@ -86,8 +95,8 @@ def calcPoint():
   closePoint = polarToPoint(minDistance, minAngle)
 
   # find the left edge and right edge
-  leftPoint  = findEdge(minAngle - 1, -1)
-  rightPoint = findEdge(minAngle + 1,  1)
+  leftPoint  = findEdge(minAngle - 1, +1)
+  rightPoint = findEdge(minAngle + 1, -1)
   # print("centerAng:", minAngle, "left:", leftPoint.z, "right:", rightPoint.z)
   # print("dist", ((leftPoint.x - rightPoint.x) ** 2 + (leftPoint.y - rightPoint.y) **2) ** 0.5)
 

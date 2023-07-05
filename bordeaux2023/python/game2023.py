@@ -285,7 +285,7 @@ def startGrasping():
         challengeFlag = False
         btrRobotino.w_goToOutputVelt()
         # btrRobotino.w_robotinoMove(0, 25)
-        btrRobotino.w_goToWall(0.015 + 0.020)
+        btrRobotino.w_goToWall(0.35)
         btrRobotino.w_parallelMPS()
 
         name = "g_ref_img"
@@ -307,7 +307,7 @@ def startGrasping():
             a_previous = int((-ato_take) * (ato_take % 2))
 
         #btrRobotino.w_goToOutputVelt()
-        btrRobotino.w_goToWall(0.015)
+        btrRobotino.w_goToWall(0.15)
         btrRobotino.w_getWork()
 
         if (robotNum != 2):
@@ -316,7 +316,7 @@ def startGrasping():
             btrRobotino.w_turnCounterClockwise()
 
         btrRobotino.w_goToInputVelt()
-        btrRobotino.w_goToWall(0.015 + 0.020)
+        btrRobotino.w_goToWall(0.35)
         btrRobotino.w_parallelMPS()
 
         name = "r_ref_img"
@@ -328,15 +328,15 @@ def startGrasping():
             ld = module_line_detect(img)
             ato_take = ld.detect()
             if ato_take == -1: # left
-                btrRobotino.w_robotinoMove(0, -0.015)
+                btrRobotino.w_robotinoMove(0, -0.15)
             elif ato_take == 1: # right
-                btrRobotino.w_robotinoMove(0, 0.015)
+                btrRobotino.w_robotinoMove(0, 0.15)
             elif ato_take == 2: # none detected
-                btrRobotino.w_robotinoMove(0, -a_previous * 0.015)
+                btrRobotino.w_robotinoMove(0, -a_previous * 0.15)
             else:
                 break
             a_previous = int((-ato_take) * (ato_take % 2))
-        btrRobotino.w_goToWall(0.015)
+        btrRobotino.w_goToWall(0.15)
 
         btrRobotino.w_putWork()
         if (robotNum != 2):

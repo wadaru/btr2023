@@ -100,27 +100,34 @@ def tagLocation(data):
                                       [  0.        ,   0.        ,   1.        ]])
             distortion_coeff = np.array([ 0.13505291, -0.29420201, -0.00645303,  0.00196495, -0.01754147])
 
-            rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners, marker_length, camera_matrix, distortion_coeff)
-            tvec = np.squeeze(tvec)
-            rvec = np.squeeze(rvec)
-            rvec_matrix = cv2.Rodrigues(rvec)
-            rvec_matrix = rvec_matrix[0] 
-            transpose_tvec = tvec[np.newaxis, :].T
-            proj_matrix = np.hstack((rvec_matrix, transpose_tvec))
+            minDistance = 1000
+            for i, corner in enumerate(corners):
+                rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corner, marker_length, camera_matrix, distortion_coeff)
+                # print(i, "corner", corner)
+                tvec = np.squeeze(tvec)
+                rvec = np.squeeze(rvec)
+                rvec_matrix = cv2.Rodrigues(rvec)
+                rvec_matrix = rvec_matrix[0] 
+                transpose_tvec = tvec[np.newaxis, :].T
+                # print(rvec_matrix)
+                # print(transpose_tvec)
+                proj_matrix = np.hstack((rvec_matrix, transpose_tvec))
   
-            euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6] # [deg]
-            print("x : " + str(tvec[0]))
-            print("y : " + str(tvec[1]))
-            print("z : " + str(tvec[2]))
+                euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6] # [deg]
+                if (tvec[0] < minDistance):
+                    minDistance = tvec[0]
+                    print("x : " + str(tvec[0]))
+                    print("y : " + str(tvec[1]))
+                    print("z : " + str(tvec[2]))
 
-            print("roll : " + str(euler_angle[0]))
-            # print("pitch: " + str(euler_angle[1]))
-            # print("yaw  : " + str(euler_angle[2]))
-            tagLocation.tag_location.x = tvec[2]
-            tagLocation.tag_location.y = -tvec[0]
-            tagLocation.tag_location.theta = euler_angle[0]
-            tagLocation.tag_id.data = tagInfo.tag_id.data
-            tagLocation.ok = True
+                    print("roll : " + str(euler_angle[0]))
+                    # print("pitch: " + str(euler_angle[1]))
+                    # print("yaw  : " + str(euler_angle[2]))
+                    tagLocation.tag_location.x = tvec[2]
+                    tagLocation.tag_location.y = -tvec[0]
+                    tagLocation.tag_location.theta = euler_angle[0]
+                    tagLocation.tag_id.data = tagInfo.tag_id.data
+                    tagLocation.ok = True
     return tagLocation
 
 if __name__ == "__main__":
