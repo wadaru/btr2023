@@ -7,11 +7,8 @@ import rospy
 import numpy
 import cv2
 # import robotino2022
-import btr2023
-# from module_photographer import module_photographer
-# from module_work_detect import module_work_detect
-# from module_line_detect import module_line_detect
-rom module_photographer import module_photographer
+import btr2023_pall as btr2023
+from module_photographer import module_photographer
 from module_belt_detect import module_belt_detect
 from module_photographer_by_c920 import module_photographer_by_c920
 from module_belt_detect_for_c920 import module_belt_detect_for_c920
@@ -52,18 +49,18 @@ FIELDSIZEY = (FIELDMAXY - FIELDMINY) + 1
 FIELDSIZE = FIELDSIZEX * FIELDSIZEY
 MAXSTEP = 999
 
-zoneX = { "S11" : -0.5, "S21" : -1.5, "S31" : -2.5, "S41" : -3.5, "S51" : -4.5,
-          "S12" : -0.5, "S22" : -1.5, "S32" : -2.5, "S42" : -3.5, "S52" : -4.5,
-          "S13" : -0.5, "S23" : -1.5, "S33" : -2.5, "S43" : -3.5, "S53" : -4.5,
-          "S14" : -0.5, "S24" : -1.5, "S34" : -2.5, "S44" : -3.5, "S54" : -4.5,
-          "S15" : -0.5, "S25" : -1.5, "S35" : -2.5, "S45" : -3.5, "S55" : -4.5 }
-zoneY = { "S11" :  0.5, "S21" :  0.5, "S31" :  0.5, "S41" :  0.5, "S51" :  0.5,
-          "S12" :  1.5, "S22" :  1.5, "S32" :  1.5, "S42" :  1.5, "S52" :  1.5,
-          "S13" :  2.5, "S23" :  2.5, "S33" :  2.5, "S43" :  2.5, "S53" :  2.5,
-          "S14" :  3.5, "S24" :  3.5, "S34" :  3.5, "S44" :  3.5, "S54" :  3.5,
-          "S15" :  4.5, "S25" :  4.5, "S35" :  4.5, "S45" :  4.5, "S55" :  4.5 }
-inputX = { 0: 1.0, 45: 0.5, 90:   0, 135: -0.5, 180: -1.0, 225: -0.5, 270:    0, 315:  0.5, 360: 1.0}
-inputY = { 0:   0, 45: 0.5, 90: 1.0, 135:  0.5, 180:    0, 225: -0.5, 270: -1.0, 315: -0.5, 360:   0}
+zoneX = { "S11" :  -500, "S21" : -1500, "S31" : -2500, "S41" : -3500, "S51" : -4500,
+          "S12" :  -500, "S22" : -1500, "S32" : -2500, "S42" : -3500, "S52" : -4500,
+          "S13" :  -500, "S23" : -1500, "S33" : -2500, "S43" : -3500, "S53" : -4500,
+          "S14" :  -500, "S24" : -1500, "S34" : -2500, "S44" : -3500, "S54" : -4500,
+          "S15" :  -500, "S25" : -1500, "S35" : -2500, "S45" : -3500, "S55" : -4500 }
+zoneY = { "S11" :  500, "S21" :  500, "S31" :  500, "S41" :  500, "S51" :  500,
+          "S12" : 1500, "S22" : 1500, "S32" : 1500, "S42" : 1500, "S52" : 1500,
+          "S13" : 2500, "S23" : 2500, "S33" : 2500, "S43" : 2500, "S53" : 2500,
+          "S14" : 3500, "S24" : 3500, "S34" : 3500, "S44" : 3500, "S54" : 3500,
+          "S15" : 4500, "S25" : 4500, "S35" : 4500, "S45" : 4500, "S55" : 4500 }
+inputX = { 0: 1000, 45: 500, 90:    0, 135:  -500, 180: -1000, 225:  -500, 270:     0, 315: 500, 360: 1000}
+inputY = { 0:    0, 45: 500, 90: 1000, 135: 500, 180:    0, 225:  -500, 270:  -1000, 315:  -500, 360:     0}
 outputX = {  0: inputX[180],  45: inputX[225],  90: inputX[270], 135: inputX[315],
            180: inputX[  0], 225: inputX[ 45], 270: inputX[ 90], 315: inputX[135]}
 outputY = {  0: inputY[180],  45: inputY[225],  90: inputY[270], 135: inputY[315],
@@ -147,8 +144,8 @@ def sendBeacon():
 
     # for poseStamped()
     beacon.pose = PoseStamped()
-    beacon.pose.pose.position.x = btrOdometry.pose.pose.position.x # / 1000
-    beacon.pose.pose.position.y = btrOdometry.pose.pose.position.y # / 1000
+    beacon.pose.pose.position.x = btrOdometry.pose.pose.position.x
+    beacon.pose.pose.position.y = btrOdometry.pose.pose.position.y
     beacon.pose.pose.position.z = 0
     beacon.pose.pose.orientation.x = btrOdometry.pose.pose.orientation.x
     beacon.pose.pose.orientation.y = btrOdometry.pose.pose.orientation.y
@@ -163,8 +160,13 @@ def sendBeacon():
 
     rospy.wait_for_service('/rcll/send_beacon')
     try:
+        # print("/rcll/send_beacon")
         refboxSendBeacon = rospy.ServiceProxy('/rcll/send_beacon', SendBeaconSignal)
+        # print("sendBeacon: ", beacon.header, beacon.pose)
         resp1 = refboxSendBeacon(beacon.header, beacon.pose)
+        # resp1 = refboxSendBeacon(beacon.header, beacon.point)
+        # print("sendBeacon: ", beacon.header, beacon.pose)
+        # print("resp: ", resp1)
         return resp1
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
@@ -235,48 +237,19 @@ def robotinoOdometry(data):
       sendBeacon()
       btrBeaconCounter = 0
 
-def w_findMPS():
-    btrRobotino.w_getMPSLocation()
-    if (btrRobotino.MPS_find == True):
-        name = machineName[btrRobotino.MPS_id]
-        print(name, btrRobotino.MPS_zone, btrRobotino.MPS_phi)
-        machineReport.name = name[0: len(name) - 2]
-        if (name[4 : 5] == "-"):
-            machineReport.type = name[2 : 4]
-        else:
-            machineReport.type = name[2 : 5]
-            zone = int(btrRobotino.MPS_zone[3 : 5])
-        if (btrRobotino.MPS_zone[0: 1] == "M"):
-            zone = -zone
-        machineReport.zone = zone
-        machineReport.rotation = btrRobotino.MPS_phi
-        sendMachineReport(machineReport)
-    return btrRobotino.MPS_find
-
 def goToPoint(x, y, phi):
     btrRobotino.w_robotinoMove(0, 0)
-    btrRobotino.w_waitOdometry()
     nowX = btrOdometry.pose.pose.position.x
     nowY = btrOdometry.pose.pose.position.y
     nowPhi = btrOdometry.pose.pose.position.z
     dist = ((x - nowX)**2 + (y - nowY)**2) **0.5
-    # print(dist)
-    if (dist > 0.30):
-      turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
-      print(nowX, nowY, nowPhi, "=>", x, y, phi)
-      # print(turn, turn - nowPhi)
-      btrRobotino.w_robotinoTurn(turn - nowPhi)
-      btrRobotino.w_robotinoMove(dist, 0)
-    else:
-      moveX = x - nowX
-      moveY = y - nowY
-      # print(moveX, moveY, nowPhi)
-      rad = math.radians(nowPhi)
-      distX = moveX * math.cos(-rad) - moveY * math.sin(-rad)
-      distY = moveX * math.sin(-rad) + moveY * math.cos(-rad)
-      btrRobotino.w_robotinoMove(distX, distY)
+    turn = numpy.rad2deg(numpy.arctan2(y - nowY, x - nowX))
+    print(nowX, nowY, nowPhi, "=>", x, y, phi)
+    print(turn, turn - nowPhi)
+    btrRobotino.w_robotinoTurn(turn - nowPhi)
+    btrRobotino.w_robotinoMove(dist, 0)
     nowPhi = btrOdometry.pose.pose.position.z
-    # print(phi, phi - nowPhi)
+    print(phi, phi - nowPhi)
     btrRobotino.w_robotinoTurn(phi - nowPhi)
     # btrRobotino.w_robotinoMove(x, y)
     # btrRobotino.w_robotinoTurn(phi)
@@ -284,25 +257,47 @@ def goToPoint(x, y, phi):
 # challenge program
 #
 
+def old_startGrasping():
+    for j in range(3):
+        print(j)
+        btrRobotino.w_goToOutputVelt()
+        btrRobotino.w_getWork()
+        #
+        if (robotNum != 2):
+            btrRobotino.w_turnClockwise()
+        else:
+            btrRobotino.w_turnCounterClockwise()
+        btrRobotino.w_goToInputVelt()
+        btrRobotino.w_putWork()
+        print("turn")
+        if (robotNum != 2):
+            btrRobotino.w_turnCounterClockwise()
+        else:
+            btrRobotino.w_turnClockwise()
+        # finish?
+
 def graspTransparent():
     name = "ref_img"
     pg1 = module_photographer(name)
     pg2 = module_photographer_by_c920(name)
 
-    btrRobotino.w_goToWall(0.9)
+
+
+    btrRobotino.w_goToWall(90)
 
     btrRobotino.w_goToInputVelt()
     btrRobotino.w_parallelMPS()
-    btrRobotino.w_goToWall(0.4)
+    btrRobotino.w_goToWall(40)
 
     adjustment(name, pg2, False)
-    btrRobotino.w_goToWall(0.17)
+    btrRobotino.w_goToWall(17)
 
-    btrRobotino.w_robotinoMove(0, -0.23)
+    btrRobotino.w_robotinoMove(0, -115-115)
     #btrRobotino.w_robotinoMove(5, 0)
 
     btrRobotino.w_pick_rs()
     btrRobotino.w_looking_for_C0()
+
     a_previous = 0
     for i in range(10):
         pg1.run()
@@ -312,11 +307,11 @@ def graspTransparent():
         ato_take = d.run()
         d.show_result()
         if ato_take == -1: # left
-            btrRobotino.w_robotinoMove(0, -0.015)
+            btrRobotino.w_robotinoMove(0, -15)
         elif ato_take == 1: # right
-            btrRobotino.w_robotinoMove(0, 0.015)
+            btrRobotino.w_robotinoMove(0, 15)
         elif ato_take == 2: # none detected
-            btrRobotino.w_robotinoMove(0, -a_previous * 0.015)
+            btrRobotino.w_robotinoMove(0, -a_previous*15)
         else:
             break
         a_previous = int((-ato_take)*(ato_take % 2))
@@ -324,32 +319,37 @@ def graspTransparent():
     btrRobotino.w_put_rs()
 
     btrRobotino.w_move_g_C0()
-    btrRobotino.w_goToWall(0.4)
+    
+    btrRobotino.w_goToWall(40)
     btrRobotino.w_goToMPSCenterLRF()
     #btrRobotino.w_goToInputVelt()
     btrRobotino.w_parallelMPS()
-    btrRobotino.w_goToWall(0.4)
+    btrRobotino.w_goToWall(40)
 
     adjustment(name, pg2, False)
-    btrRobotino.w_goToWall(0.17)
+    btrRobotino.w_goToWall(17)
     btrRobotino.w_putWork()
+    
+    btrRobotino.w_goToWall(90)
 
-    btrRobotino.w_goToWall(0.9)
+
+
 
 
 def startGrasping():
     name = "ref_img"
-    pg = module_photographer()
+    pg = module_photographer(name)
     for _ in range(3):
         print("{} / 3 repeation".format(_+1))
         challengeFlag = False
 
         btrRobotino.w_goToOutputVelt()
-        btrRobotino.w_goToWall(0.35)
         btrRobotino.w_parallelMPS()
-        btrRobotino.w_goToWall(0.17)
+        btrRobotino.w_goToWall(15)
 
         adjustment(name, pg, True)
+
+        #btrRobotino.w_bringWork()
         btrRobotino.w_getWork()
 
         if (robotNum != 2):
@@ -358,9 +358,8 @@ def startGrasping():
             btrRobotino.w_turnCounterClockwise()
 
         btrRobotino.w_goToInputVelt()
-        btrRobotino.w_goToWall(0.35)
         btrRobotino.w_parallelMPS()
-        btrRobotino.w_goToWall(0.17)
+        btrRobotino.w_goToWall(15)
 
         adjustment(name, pg, True)
 
@@ -382,14 +381,15 @@ def adjustment(name, pg, rs):
         ato_take = d.run()
         d.show_result()
         if ato_take == -1: # left
-            btrRobotino.w_robotinoMove(0, -0.015)
+            btrRobotino.w_robotinoMove(0, -15)
         elif ato_take == 1: # right
-            btrRobotino.w_robotinoMove(0, 0.015)
+            btrRobotino.w_robotinoMove(0, 15)
         elif ato_take == 2: # none detected
-            btrRobotino.w_robotinoMove(0, -a_previous * 0.015)
+            btrRobotino.w_robotinoMove(0, -a_previous*15)
         else:
             break
         a_previous = int((-ato_take)*(ato_take % 2))
+
 
 def startGrasping_by_c920():
     name = "ref_img"
@@ -398,30 +398,31 @@ def startGrasping_by_c920():
         print("{} / 3 repeation".format(_+1))
         challengeFlag = False
 
-        btrRobotino.w_goToWall(0.90)
+        btrRobotino.w_goToWall(90)
         btrRobotino.w_goToOutputVelt()
         btrRobotino.w_parallelMPS()
-        btrRobotino.w_goToWall(0.40)
+        btrRobotino.w_goToWall(40)
 
         adjustment(name, pg, False)
 
-        btrRobotino.w_goToWall(0.17)
+        btrRobotino.w_goToWall(15)
 
         #btrRobotino.w_bringWork()
         btrRobotino.w_getWork()
+
         if (robotNum != 2):
             btrRobotino.w_turnClockwise()
         else:
             btrRobotino.w_turnCounterClockwise()
 
-        btrRobotino.w_goToWall(0.90)
+        btrRobotino.w_goToWall(90)
         btrRobotino.w_goToInputVelt()
         btrRobotino.w_parallelMPS()
-        btrRobotino.w_goToWall(0.40)
+        btrRobotino.w_goToWall(40)
 
         adjustment(name, pg, False)
 
-        btrRobotino.w_goToWall(0.17)
+        btrRobotino.w_goToWall(15)
 
         btrRobotino.w_putWork()
         if (robotNum != 2):
@@ -429,16 +430,10 @@ def startGrasping_by_c920():
         else:
             btrRobotino.w_turnClockwise()
 
+
 def initField():
     global btrField
-    btrField = [[0 for y in range(FIELDSIZEY)] for x in range(FIELDSIZEX)]
-    for zone in range(2):
-        for x in range(1, 8):
-            for y in range(1, 8):
-                zoneName = str(zone * 100 + x) + str(y)
-                zoneX[zoneName] = (x - 0.5) * (-zone * 2 + 1)
-                zoneY[zoneName] = y - 0.5
-                # print(zoneName, zoneX[zoneName], zoneY[zoneName])
+    btrField = [[0 for y in range(5)] for x in range(5)]
     #
     # this field is [y][x]
     # but game field is from -5 to -1
@@ -556,15 +551,14 @@ def makeNextPoint(destination):
     robotReal = Pose2D()
     robotZone = Pose2D()
     point = Pose2D()
-    btrRobotino.w_waitOdometry()
     robotReal.x = btrOdometry.pose.pose.position.x
     robotReal.y = btrOdometry.pose.pose.position.y
 
     if (robotReal.x > 0):
-        robotZone.x = int(robotReal.x) + 1
+        robotZone.x = int((robotReal.x) / 1000) + 1
     else:
-        robotZone.x = int(robotReal.x) - 1
-    robotZone.y = int(robotReal.y) + 1
+        robotZone.x = int((robotReal.x) / 1000) - 1
+    robotZone.y = int((robotReal.y) / 1000) + 1
 
     x = int(robotZone.x)
     y = int(robotZone.y)
@@ -622,7 +616,7 @@ def getNextPoint(pointNumber):
 
 def startNavigation():
     global btrField
-    # initField()
+    initField()
     print("----")
     setMPStoField()
     print("====")
@@ -638,10 +632,10 @@ def startNavigation():
             while True:
                 point = getNextPoint(pointNumber)
                 if (point.x > 0):
-                    point.x = point.x * 1.0 - 0.5
+                    point.x = point.x * 1000 - 500
                 else:
-                    point.x = point.x * 1.0 + 0.5
-                point.y = point.y * 1.0 - 0.5
+                    point.x = point.x * 1000 + 500
+                point.y = point.y * 1000 - 500
                 if (point.theta == 360):
                     goToPoint(point.x, point.y, oldTheta)
                     break
@@ -663,15 +657,12 @@ def startNavigation():
 #
 if __name__ == '__main__':
   args = sys.argv
-  topicName = ""
   if (len(args) >= 2):
     challenge = args[1]
     if (len(args) >= 3):
       robotNum = int(args[2])
     else:
       robotNum = 1
-    if challenge == "gazebo":
-      topicName = "/robotino" + str(robotNum)
 
   # valiables for refbox
   refboxBeaconSignal = BeaconSignal()
@@ -706,8 +697,7 @@ if __name__ == '__main__':
 
   btrField = [[0 for y in range(5)] for x in range(5)]
 
-  nodeName = "btr2023_" + str(robotNum)
-  rospy.init_node(nodeName)
+  rospy.init_node('btr2023')
   rospy.Subscriber("rcll/beacon", BeaconSignal, beaconSignal)
   rospy.Subscriber("rcll/exploration_info", ExplorationInfo, explorationInfo)
   rospy.Subscriber("rcll/game_state", GameState, gameState)
@@ -715,30 +705,23 @@ if __name__ == '__main__':
   rospy.Subscriber("rcll/machine_report_info", MachineReportInfo, machineReportInfo)
   rospy.Subscriber("rcll/order_info", OrderInfo, orderInfo)
   rospy.Subscriber("rcll/ring_info", RingInfo, ringInfo)
-  rospy.Subscriber(topicName + "/odom", Odometry, robotinoOdometry)
+  rospy.Subscriber("/odom", Odometry, robotinoOdometry)
   rospy.Subscriber("rcll/routes_info", NavigationRoutes, navigationRoutes)
   rate = rospy.Rate(10)
 
   machineReport = MachineReportEntryBTR()
   prepareMachine = SendPrepareMachine() 
 
-  print(topicName)
-  btrRobotino = btr2023.btr2023(topicName)
-
-  if (challenge == "reset"):
-      goToPoint(-3.5,  1.5, 90)
-      goToPoint(-3.5,  0.5, 90)
-      goToPoint(pose.x, pose.y, pose.theta)
-      exit()
+  btrRobotino = btr2023.btr2023()
 
   pose = Pose2D()
-  pose.x = -1.0 * robotNum - 1.5
-  pose.y = 0.5
+  pose.x = -1000 * robotNum - 1500
+  pose.y = 500
   pose.theta = 90
   if (challenge == "grasping"):
-      startX =     [ -0.5, -4.5, -0.5]
-      startY =     [  0.5,  1.5,  4.5]
-      startTheta = [   90,   90,  180]
+      startX =     [ -500, -4500, -500]
+      startY =     [  500,  1500, 4500]
+      startTheta = [   90,    90,  180]
       pose.x = startX[robotNum - 1]
       pose.y = startY[robotNum - 1]
       pose.theta = startTheta[robotNum - 1]
@@ -746,17 +729,16 @@ if __name__ == '__main__':
       pose.x = zoneX["S31"]
       pose.y = zoneY["S31"]
       pose.theta = 90
-  if (challenge == "gazebo" or challenge == "rcll" or challenge == "test"):
-      pose.x = -(pose.x - 2.0)
-
   print(pose.x, pose.y, pose.theta)
+  if (challenge == "reset"):
+      # goToPoint(-800, -1500, 90)
+      goToPoint(pose.x, pose.y, pose.theta)
+      exit()
   btrRobotino.w_resetOdometry(pose)
-  # time.sleep(3)
-  btrRobotino.w_waitOdometry()
+  time.sleep(3)
 
   print(challenge)
   challengeFlag = True
-  initField()
   # while True:
   while not rospy.is_shutdown():
     # sendBeacon()
@@ -767,21 +749,33 @@ if __name__ == '__main__':
         # goTo S33
         goToPoint(zoneX["S33"], zoneY["S33"], 90)
         for j in range(2):
-            for i in range(9):
-                # btrRobotino.w_findMPS()
-                w_findMPS()
-                btrRobotino.w_robotinoTurnAbs(45 * i)
+            for i in range(8):
+                btrRobotino.w_robotinoTurn(45)
+                btrRobotino.w_getMPSLocation()
+                if (btrRobotino.MPS_find == True):
+                    name = machineName[btrRobotino.MPS_id]
+                    print(name, btrRobotino.MPS_zone, btrRobotino.MPS_phi)
+                    machineReport.name = name[0: len(name) - 2]
+                    if (name[4 : 5] == "-"):
+                        machineReport.type = name[2 : 4]
+                    else:
+                        machineReport.type = name[2 : 5]
+                    zone = int(btrRobotino.MPS_zone[3 : 5])
+                    if (btrRobotino.MPS_zone[0: 1] == "M"):
+                        zone = -zone
+                    machineReport.zone = zone
+                    machineReport.rotation = btrRobotino.MPS_phi
+                    sendMachineReport(machineReport)
             print(j)
             time.sleep(3)
-        
-        goToPoint(zoneX["S31"], zoneY["S31"], 90)
+
         break
 
     if (challenge == "gripping" and challengeFlag):
         slotNo = 3
         if (True):
-            moveGo   = [-0.100, -0.220, -0.305]
-            moveBack = [ 0.105,  0.220,  0.310]
+            moveGo   = [-100, -220, -305]
+            moveBack = [ 105,  220,  310]
             btrRobotino.w_goToInputVelt()
             btrRobotino.w_robotinoMove(0,  moveGo[  slotNo - 1])
             btrRobotino.w_getWork()
@@ -795,12 +789,27 @@ if __name__ == '__main__':
         challengeFlag = False
         break
 
+    if (challenge == "test"):
+        startGrasping()
+        challengeFlag = False
+        break
+
+    if (challenge == "test_by_c920"):
+        startGrasping_by_c920()
+        challengeFlag = False
+        break
+
+    if (challenge == "test_C0"):
+        graspTransparent()
+        challengeFlag = False
+        break
+
     if (challenge == "driving" and challengeFlag):
         print("startDriving for JapanOpen2020")
-        targetZone =  ["S31", "S35", "S15", "S13", "S33", "S31", "S31", "S31"]
+        targetZone =  ["S31", "S32", "S22", "S22", "S32", "S35", "S35", "S31"]
         #                            Target1               Target2
-        targetAngle = [   90,     0,   270,   180,   270,    90,    90,    90]
-        sleepTime   = [    0,     5,     0,     5,     0,     5,     0,     1]
+        targetAngle = [   90,     0,    90,   180,    90,    45,   270,    90]
+        sleepTime   = [    0,     0,     5,     0,     0,     5,     0,     1]
         for number in range(len(targetZone)):
             print(targetZone[number])
             x = zoneX[targetZone[number]]
@@ -873,16 +882,20 @@ if __name__ == '__main__':
         challengeFlag = False
         break
 
-    if (challenge == "navigationTest" and challengeFlag):
-        startNavigation()
-        challengeFlag = False
-        break
-
     if (refboxGamePhase == 30 and challenge == "navigation" and challengeFlag):
         if (refboxMachineInfoFlag and refboxNavigationRoutesFlag):
             startNavigation()
             challengeFlag = False
             break
+
+    # send machine report for Exploration Phase
+    if (refboxGamePhase == 20):
+        if (refboxTime.sec == 10):
+            machineReport.name = "C-CS1"
+            machineReport.type = "CS"
+            machineReport.zone = -53 
+            machineReport.rotation = 210
+            sendMachineReport(machineReport)
 
     # send machine prepare command
     if (refboxGamePhase == 30 and challenge == "" ):
@@ -916,58 +929,7 @@ if __name__ == '__main__':
             prepareMachine.ds_order_id = 1 # ORDER ID
             prepareMachine.wait = True
             sendPrepareMachine(prepareMachine)
-            
-    if ( challenge == "gazebo"):
-        sendBeacon()
-        print(challenge)
-        if (refboxGamePhase == 30 and challengeFlag):
-            if (refboxTime.sec <= 180): # for exploration
-                challengeFlag = False
-                print("GoToExploration")
-                goToPoint(zoneX["51"], zoneY["51"],  90)
-                goToPoint(zoneX["52"], zoneY["52"],   0)
-                # findMPS
-                for i in range(-2, 2):
-                    # btrRobotino.w_findMPS()
-                    w_findMPS()
-                    btrRobotino.w_robotinoTurnAbs(45 * i)
 
-    if ( challenge == "TEST" and challengeFlag):
-        challengeFlag = False
-        sendBeacon()
-        btrRobotino.w_goToMPSCenterLRF()
-
-    if ( challenge == "test" and challengeFlag):
-        challengeFlag = False
-        sendBeacon()
-        
-        print("test1")
-        goToPoint(zoneX["51"], zoneY["51"],  90)
-        print("test2")
-        goToPoint(zoneX["52"], zoneY["52"],   0)
-        print("test3")
-
-        # if (btrRobotino.w_findMPS() == True):
-        if (w_findMPS() == True):
-          print("test4")
-          btrRobotino.w_goToOutputVelt()
-          print("test5")
-        # btrRobotino.w_goToWall(0.015 + 0.020)
-        # btrRobotino.w_parallelMPS()
-        # btrRobotino.w_findMPS()
-        print("test finished")
-
-    if (challenge == "test_by_c920"):
-        startGrasping_by_c920()
-        challengeFlag = False
-        break
-
-    if (challenge == "test_C0"):
-        graspTransparent()
-        challengeFlag = False
-        break
-
-    sendBeacon()
     rate.sleep()
 
 
