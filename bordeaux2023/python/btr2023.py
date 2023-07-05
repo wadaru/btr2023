@@ -27,6 +27,15 @@ from rcll_btr_msgs.srv import SetOdometry, SetPosition, SetVelocity, \
                               SetDistance, TagInfo,     TagLocation
 from robotino_msgs.srv import ResetOdometry
 
+machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-I",
+                201 : "M-CS1-O", 202 : "M-CS1-I", 203 : "M-CS2-O", 204 : "M-CS2-I",
+                111 : "C-RS1-O", 112 : "C-RS1-I", 113 : "C-RS2-O", 114 : "C-RS2-I",
+                211 : "M-RS1-O", 212 : "M-RS1-I", 213 : "M-RS2-O", 214 : "M-RS2-I",
+                121 : "C-BS-O",  122 : "C-BS-I",  221 : "M-BS-O",  222 : "M-BS-I",
+                131 : "C-DS-O",  132 : "C-DS-I",  231 : "M-DS-O",  232 : "M-DS-I",
+                141 : "C-SS-O",  142 : "C-SS-I",  241 : "M-SS-O",  242 : "M-SS-I",
+                301 : "UMPS-1",  302 : "UMPS-2" }
+
 # linear max velocity is 0.1[m/s] and min is 0.01.
 # angular max velocity is 1.0[rad/s?] and min is 0.01
 min_mps_distance = 0.07
@@ -93,7 +102,7 @@ class btr2023(object):
         self.sub3 = rospy.Subscriber(self.topicName + "/btr/centerPoint", Point, self.centerPoint)
         self.sub4 = rospy.Subscriber(self.topicName + "/btr/leftPoint", Point, self.leftPoint)
         self.sub5 = rospy.Subscriber(self.topicName + "/btr/rightPoint", Point, self.rightPoint)
-        self.sub6 = rospy.Subscriber(self.topicName + "/btr/fowardPoint", Point, self.forwardPoint)
+        self.sub6 = rospy.Subscriber(self.topicName + "/btr/forwardPoint", Point, self.forwardPoint)
         self.rate = rospy.Rate(10)
         self.pub1 = rospy.Publisher(self.topicName + "/cmd_vel", Twist, queue_size = 10)
 
@@ -171,6 +180,7 @@ class btr2023(object):
                 v.y = velocity1(diff_y)
             v.theta = 0
             # print(diff_x, diff_y)
+            print("robotinoMove", diff_x, self.forwardPoint.x)
             if (self.forwardPoint.x < diff_x):
                 if (self.forwardPoint.x < 1.0):
                     v.x = v.x / 1.0 * self.forwardPoint.x
@@ -450,7 +460,7 @@ class btr2023(object):
         zone_x = int(abs(self.MPS_x) / 1.0) + 1
         zone_y = int(abs(self.MPS_y) / 1.0) + 1
         self.MPS_zone = zone + "_Z" + str(zone_x * 10 + zone_y)
-
+'''
     def w_findMPS(self):
         self.w_getMPSLocation()
         if (self.MPS_find == True):
@@ -462,11 +472,13 @@ class btr2023(object):
             else:
                 machineReport.type = name[2 : 5]
                 zone = int(self.MPS_zone[3 : 5])
-                if (self.MPS_zone[0: 1] == "M"):
-                    zone = -zone
-                machineReport.zone = zone
-                machineReport.rotation = self.MPS_phi
-                sendMachineReport(machineReport)
+            if (self.MPS_zone[0: 1] == "M"):
+                zone = -zone
+            machineReport.zone = zone
+            machineReport.rotation = self.MPS_phi
+            sendMachineReport(machineReport)
+        return self.MPS_find
+'''
 
 # main
 #
