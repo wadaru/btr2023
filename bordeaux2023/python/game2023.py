@@ -230,6 +230,24 @@ def robotinoOdometry(data):
       sendBeacon()
       btrBeaconCounter = 0
 
+def w_findMPS():
+    btrRobotino.w_getMPSLocation()
+    if (btrRobotino.MPS_find == True):
+        name = machineName[btrRobotino.MPS_id]
+        print(name, btrRobotino.MPS_zone, btrRobotino.MPS_phi)
+        machineReport.name = name[0: len(name) - 2]
+        if (name[4 : 5] == "-"):
+            machineReport.type = name[2 : 4]
+        else:
+            machineReport.type = name[2 : 5]
+            zone = int(btrRobotino.MPS_zone[3 : 5])
+        if (btrRobotino.MPS_zone[0: 1] == "M"):
+            zone = -zone
+        machineReport.zone = zone
+        machineReport.rotation = btrRobotino.MPS_phi
+        sendMachineReport(machineReport)
+    return btrRobotino.MPS_find
+
 def goToPoint(x, y, phi):
     btrRobotino.w_robotinoMove(0, 0)
     btrRobotino.w_waitOdometry()
@@ -626,8 +644,8 @@ if __name__ == '__main__':
   btrRobotino = btr2023.btr2023(topicName)
 
   if (challenge == "reset"):
-      goToPoint(-2.5,  1.5, 90)
-      goToPoint(-2.5,  0.5, 90)
+      goToPoint(-3.5,  1.5, 90)
+      goToPoint(-3.5,  0.5, 90)
       goToPoint(pose.x, pose.y, pose.theta)
       exit()
 
@@ -646,7 +664,7 @@ if __name__ == '__main__':
       pose.x = zoneX["S31"]
       pose.y = zoneY["S31"]
       pose.theta = 90
-  if (challenge == "gazebo" or challenge == "rcll"):
+  if (challenge == "gazebo" or challenge == "rcll" or challenge == "test"):
       pose.x = -(pose.x - 2.0)
 
   print(pose.x, pose.y, pose.theta)
@@ -668,7 +686,8 @@ if __name__ == '__main__':
         goToPoint(zoneX["S33"], zoneY["S33"], 90)
         for j in range(2):
             for i in range(9):
-                btrRobotino.w_findMPS()
+                # btrRobotino.w_findMPS()
+                w_findMPS()
                 btrRobotino.w_robotinoTurnAbs(45 * i)
             print(j)
             time.sleep(3)
@@ -827,7 +846,8 @@ if __name__ == '__main__':
                 goToPoint(zoneX["52"], zoneY["52"],   0)
                 # findMPS
                 for i in range(-2, 2):
-                    btrRobotino.w_findMPS()
+                    # btrRobotino.w_findMPS()
+                    w_findMPS()
                     btrRobotino.w_robotinoTurnAbs(45 * i)
 
 
@@ -835,10 +855,21 @@ if __name__ == '__main__':
         challengeFlag = False
         sendBeacon()
         
-        btrRobotino.w_goToOutputVelt()
+        print("test1")
+        goToPoint(zoneX["51"], zoneY["51"],  90)
+        print("test2")
+        goToPoint(zoneX["52"], zoneY["52"],   0)
+        print("test3")
+
+        # if (btrRobotino.w_findMPS() == True):
+        if (w_findMPS() == True):
+          print("test4")
+          btrRobotino.w_goToOutputVelt()
+          print("test5")
         # btrRobotino.w_goToWall(0.015 + 0.020)
         # btrRobotino.w_parallelMPS()
         # btrRobotino.w_findMPS()
+        print("test finished")
 
     sendBeacon()
     rate.sleep()
