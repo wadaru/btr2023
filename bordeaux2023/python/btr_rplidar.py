@@ -15,9 +15,10 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty, EmptyResponse
 
+maxSensorDist = 20
 topicName = ""
 #
-def scanDistance(deg):
+def scanDistanceInf(deg):
   global topicName
   if (topicName == ""):
     return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360 - 90) % 360))]
@@ -25,6 +26,12 @@ def scanDistance(deg):
     # the range of gazebo's laser is from START_ANGLE to END_ANGLE?
     return scanData.ranges[int(len(scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE))]
 
+def scanDistance(deg):
+  dist = scanDistanceInf(deg)
+  if (math.isinf(dist) or math.isnan(dist)):
+      return dist # maxSensorDist
+  else:
+      return dist
 #
 def polarToPoint(distance, angle):
   global topicName
@@ -58,8 +65,8 @@ def findEdge(startAngle, angleStep):
 
   while True:
     nowPoint = polarToPoint(scanDistance(i), i)
-    if (math.isinf(scanDistance(i))):
-      break
+    # if (math.isinf(scanDistance(i))):
+    #   break
     microAngle = calcAngle(oldPoint, nowPoint)
     macroAngle = calcAngle(startPoint, nowPoint)
     diff = abs(microAngle - macroAngle)

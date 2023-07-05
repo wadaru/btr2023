@@ -277,7 +277,7 @@ class btr2023(object):
                 self.w_goToWall(min_mps_distance)
                 # go to the front of the MPS.
                 self.w_goToMPSCenterLRF()
-            self.w_goToWall(0.15)
+            self.w_goToWall(0.17)
             self.w_parallelMPS()
 
     def w_goToMPSCenterLRF(self):
@@ -285,13 +285,13 @@ class btr2023(object):
                 
         velocityY = interpolate.interp1d(move_distance, move_velocity)
         while True:
-            dist = -(self.leftPoint.y + self.rightPoint.y) / 2
+            dist = (self.rightPoint.y - self.leftPoint.y) / 2 /100
             v = Pose2D()
             v.x = 0
             if (math.isnan(dist) or math.isinf(dist)):
                 v.y = 0
             else:
-                v.y = velocityY(dist)
+                v.y = velocityY(dist) / 10
             v.theta = 0
             print("MPSCenter:", dist, v.y)
             # if ((-0.001 < v.y) and (v.y < 0.001)):

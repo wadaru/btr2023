@@ -307,7 +307,7 @@ def startGrasping():
             a_previous = int((-ato_take) * (ato_take % 2))
 
         #btrRobotino.w_goToOutputVelt()
-        btrRobotino.w_goToWall(0.15)
+        btrRobotino.w_goToWall(0.17)
         btrRobotino.w_getWork()
 
         if (robotNum != 2):
@@ -336,7 +336,7 @@ def startGrasping():
             else:
                 break
             a_previous = int((-ato_take) * (ato_take % 2))
-        btrRobotino.w_goToWall(0.15)
+        btrRobotino.w_goToWall(0.17)
 
         btrRobotino.w_putWork()
         if (robotNum != 2):
@@ -850,6 +850,10 @@ if __name__ == '__main__':
                     w_findMPS()
                     btrRobotino.w_robotinoTurnAbs(45 * i)
 
+    if ( challenge == "TEST" and challengeFlag):
+        challengeFlag = False
+        sendBeacon()
+        btrRobotino.w_goToMPSCenterLRF()
 
     if ( challenge == "test" and challengeFlag):
         challengeFlag = False
