@@ -171,6 +171,7 @@ class btr2023(object):
                 v.y = velocity1(diff_y)
             v.theta = 0
             # print(diff_x, diff_y)
+            print(self.forwardPoint.x)
             if (self.forwardPoint.x < diff_x):
                 if (self.forwardPoint.x < 1.0):
                     v.x = v.x / 1.0 * self.forwardPoint.x
