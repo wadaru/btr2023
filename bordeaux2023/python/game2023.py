@@ -239,20 +239,20 @@ def w_findMPS():
     btrRobotino.w_getMPSLocation()
     if (btrRobotino.MPS_find == True):
         name = machineName[btrRobotino.MPS_id]
-        print(name, btrRobotino.MPS_zone, btrRobotino.MPS_phi)
+        zone = btrRobotino.MPS_zone
         machineReport.name = name[0: len(name) - 2]
         if (name[4 : 5] == "-"):
             machineReport.type = name[2 : 4]
         else:
             machineReport.type = name[2 : 5]
-            zone = int(btrRobotino.MPS_zone[3 : 5])
+        zone = int(btrRobotino.MPS_zone[3 : 5])
         if (btrRobotino.MPS_zone[0: 1] == "M"):
             zone = -zone
         machineReport.zone = zone
         machineReport.rotation = btrRobotino.MPS_phi
         sendMachineReport(machineReport)
 
-        btrRobotino.w_addMPS(name, btrRobotino.MPS_zone, btrRobotino.MPS_phi)
+        btrRobotino.w_addMPS(name, zone, btrRobotino.MPS_phi)
     return btrRobotino.MPS_find
 
 def goToPoint(x, y, phi):
@@ -480,7 +480,8 @@ def setMPStoField():
         for machine in refboxMachineInfo.machines:
             btrRobotino.w_addMPS(machine.name, machine.zone, machine.phi)
 
-    for machine in btrRobotino.machineInfo():
+    for machine in btrRobotino.machineList:
+        print(machine)
         point = zoneToPose2D(machine.zone)
         print("setMPS: ", machine.name, machine.zone, point.x, point.y)
         if (point.x == 0 and point.y == 0):
@@ -665,11 +666,11 @@ def navToPoint(point):
         point.y = point.y * 1.0 - 0.5
         if (point.theta == 360):
             goToPoint(point.x, point.y, oldTheta)
-            return true
+            return True
         else:
             goToPoint(point.x, point.y, point.theta)
             oldTheta = point.theta
-            return false
+            return False
 
     print("****")
     # print(refboxNavigationRoutes)
@@ -798,12 +799,16 @@ if __name__ == '__main__':
         challengeFlag = False
         # goTo S32
         goToPoint(zoneX["S32"], zoneY["S32"], 90)
-        for i in range(9):
+        for i in range(5):
             w_findMPS()
             btrRobotino.w_robotinoTurnAbs(45 * i)
         # goTo S34
+        navPoint = Pose2D()
         for ZONE in ["S34", "S44", "S42", "S22", "S24", "S32"]:
-            navToPoint(zoneX[ZONE], zoneY[ZONE], 90)
+            navPoint.x = zoneX[ZONE]
+            navPoint.y = zoneY[ZONE]
+            navPoint.theta = 90
+            navToPoint(navPoint)
             for i in range(9):
                 w_findMPS()
                 btrRobotino.w_robotinoTurnAbs(45 * i)

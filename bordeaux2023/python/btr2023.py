@@ -96,7 +96,7 @@ class btr2023(object):
     def __init__(self, topicName):
         self.btrOdometry = Odometry()
         self.topicName = topicName
-        self.machineList = ""
+        self.machineList = MachineReportEntryBTR()
 
         # rospy.init_node('btr2023')
         self.sub1 = rospy.Subscriber(self.topicName + "/odom", Odometry, self.robotinoOdometry)
@@ -511,32 +511,17 @@ class btr2023(object):
         zone_x = int(abs(self.MPS_x) / 1.0) + 1
         zone_y = int(abs(self.MPS_y) / 1.0) + 1
         self.MPS_zone = zone + "_Z" + str(zone_x * 10 + zone_y)
-'''
-    def w_findMPS(self):
-        self.w_getMPSLocation()
-        if (self.MPS_find == True):
-            name = machineName[self.MPS_id]
-            print(name, self.MPS_zone, self.MPS_phi)
-            machineReport.name = name[0: len(name) - 2]
-            if (name[4 : 5] == "-"):
-                machineReport.type = name[2 : 4]
-            else:
-                machineReport.type = name[2 : 5]
-                zone = int(self.MPS_zone[3 : 5])
-            if (self.MPS_zone[0: 1] == "M"):
-                zone = -zone
-            machineReport.zone = zone
-            machineReport.rotation = self.MPS_phi
-            sendMachineReport(machineReport)
-        return self.MPS_find
-'''
 
-    def w_addMPS(name, zone, phi):
+    def w_addMPS(self, name, zone, phi):
+        machine = MachineReportEntryBTR()
+        machine.name = name
+        machine.zone = zone
+        machine.rotation = phi
         if (len(self.machineList) == 0):
-            self.machineList = [name, zone, phi]
+            self.machineList = machine
         else:
             if (not (name in self.machineList)):
-                self.machineList.append([name, zone, phi])
+                self.machineList.append(machine)
 # main
 #
 if __name__ == '__main__':
