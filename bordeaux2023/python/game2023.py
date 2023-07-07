@@ -794,7 +794,7 @@ if __name__ == '__main__':
         goToPoint(zoneX["S31"], zoneY["S31"], 90)
         break
 
-    if (challenge == "exploration" and challengeFlag):
+    if (challenge == "exploration" and challengeFlag and refboxGamePhase == 20 ):
         challengeFlag = False
         # goTo S32
         goToPoint(zoneX["S32"], zoneY["S32"], 90)
@@ -802,7 +802,7 @@ if __name__ == '__main__':
             w_findMPS()
             btrRobotino.w_robotinoTurnAbs(45 * i)
         # goTo S34
-        for ZONE in ["S34", "S44", "S42", "S22", "S24", "S32"]
+        for ZONE in ["S34", "S44", "S42", "S22", "S24", "S32"]:
             navToPoint(zoneX[ZONE], zoneY[ZONE], 90)
             for i in range(9):
                 w_findMPS()
