@@ -3,7 +3,8 @@ import os
 import rospy
 from std_srvs.srv import Empty, EmptyResponse
 #CMD = "ssh -i id_rsa_Palletizer er@er python3 btr_myPalletizer.py move_Work"
-CMD = "ssh palletizer-0 -l er python3 btr_myPalletizer.py move_Work"
+# CMD = "ssh palletizer-0 -l er python3 btr_myPalletizer.py move_Work"
+CMD = "ssh palletizer-0 -l er -i /home/robotino/.ssh/id_rsa_pall python3 btr_myPalletizer.py move_Work"
 
 def grab_Arm(data):
     cmd = CMD + " btr_g.txt"
