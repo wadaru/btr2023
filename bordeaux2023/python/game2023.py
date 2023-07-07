@@ -637,7 +637,7 @@ def startNavigation():
     # setMPStoField()
     print("====")
     oldTheta = 90
-    for pointNumber in range(12 * 0 + 999):
+    for pointNumber in range(12):
         print(pointNumber)
         route = refboxNavigationRoutes.route
         if (len(route) == 0):
