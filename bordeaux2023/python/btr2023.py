@@ -192,13 +192,13 @@ class btr2023(object):
     def w_goToInputVelt(self):    # 375mm from left side(= 25 + 50*7)
         # self.w_goToWall(min_mps_distance)
         self.w_goToMPSCenter()
-        self.w_robotinoMove(0, 0.30)
+        self.w_robotinoMove(0, 0.030)
         # self.w_goToWall(15)
 
     def w_goToOutputVelt(self):   # 325mm from left side (= 25 + 50*6)
         # self.w_goToWall(min_mps_distance)
         self.w_goToMPSCenter()
-        self.w_robotinoMove(0, -0.30)
+        self.w_robotinoMove(0, -0.030)
         # self.w_goToWall(15)
 
     def w_robotinoTurnAbs(self, turnAngle):
@@ -277,7 +277,7 @@ class btr2023(object):
                 self.w_goToWall(min_mps_distance)
                 # go to the front of the MPS.
                 self.w_goToMPSCenterLRF()
-            self.w_goToWall(0.17)
+            #self.w_goToWall(0.17)
             self.w_parallelMPS()
 
     def w_goToMPSCenterLRF(self):

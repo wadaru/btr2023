@@ -290,15 +290,16 @@ def graspTransparent():
     pg2 = module_photographer_by_c920(name)
 
     btrRobotino.w_goToWall(0.9)
+    btrRobotino.w_goToMPSCenter()
 
-    btrRobotino.w_goToInputVelt()
+    #btrRobotino.w_goToInputVelt()
     btrRobotino.w_parallelMPS()
     btrRobotino.w_goToWall(0.4)
 
     adjustment(name, pg2, False)
-    btrRobotino.w_goToWall(0.17)
+    btrRobotino.w_goToWall(0.175)
 
-    btrRobotino.w_robotinoMove(0, -0.23)
+    btrRobotino.w_robotinoMove(0, -0.2)
     #btrRobotino.w_robotinoMove(5, 0)
 
     btrRobotino.w_pick_rs()
@@ -312,11 +313,11 @@ def graspTransparent():
         ato_take = d.run()
         d.show_result()
         if ato_take == -1: # left
-            btrRobotino.w_robotinoMove(0, -0.015)
+            btrRobotino.w_robotinoMove(0, -0.02)
         elif ato_take == 1: # right
-            btrRobotino.w_robotinoMove(0, 0.015)
+            btrRobotino.w_robotinoMove(0, 0.02)
         elif ato_take == 2: # none detected
-            btrRobotino.w_robotinoMove(0, -a_previous * 0.015)
+            btrRobotino.w_robotinoMove(0, -a_previous * 0.02)
         else:
             break
         a_previous = int((-ato_take)*(ato_take % 2))
@@ -324,8 +325,9 @@ def graspTransparent():
     btrRobotino.w_put_rs()
 
     btrRobotino.w_move_g_C0()
-    btrRobotino.w_goToWall(0.4)
-    btrRobotino.w_goToMPSCenterLRF()
+    btrRobotino.w_goToWall(0.9)
+    btrRobotino.w_goToMPSCenter()
+    #btrRobotino.w_goToMPSCenterLRF()
     #btrRobotino.w_goToInputVelt()
     btrRobotino.w_parallelMPS()
     btrRobotino.w_goToWall(0.4)
