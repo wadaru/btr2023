@@ -531,6 +531,12 @@ class btr2023(object):
         return self.MPS_find
 '''
 
+    def w_addMPS(name, zone, phi):
+        if (len(self.machineList) == 0):
+            self.machineList = [name, zone, phi]
+        else:
+            if (not (name in self.machineList)):
+                self.machineList.append([name, zone, phi])
 # main
 #
 if __name__ == '__main__':
