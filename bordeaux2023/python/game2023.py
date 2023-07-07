@@ -11,8 +11,8 @@ import btr2023
 # from module_photographer import module_photographer
 # from module_work_detect import module_work_detect
 # from module_line_detect import module_line_detect
-rom module_photographer import module_photographer
-from module_belt_detect import module_belt_detect
+from module_photographer import module_photographer
+# from module_belt_detect import module_belt_detect
 from module_photographer_by_c920 import module_photographer_by_c920
 from module_belt_detect_for_c920 import module_belt_detect_for_c920
 from module_center_of_gravity_detect import module_center_of_gravity_detect
@@ -41,7 +41,7 @@ from rcll_ros_msgs.msg import BeaconSignal, ExplorationInfo, \
 from rcll_ros_msgs.srv import SendBeaconSignal, SendMachineReport, \
                               SendMachineReportBTR, SendPrepareMachine
 
-TEAMNAME = "BabyTigers"
+TEAMNAME = "BabyTigers-R"
 
 FIELDMINX = -5
 FIELDMAXX = -1
@@ -398,13 +398,19 @@ def startGrasping_by_c920():
         print("{} / 3 repeation".format(_+1))
         challengeFlag = False
 
+        print("test1")
         btrRobotino.w_goToWall(0.90)
+        print("test2")
         btrRobotino.w_goToOutputVelt()
+        print("test3")
         btrRobotino.w_parallelMPS()
+        print("test4")
         btrRobotino.w_goToWall(0.40)
 
+        print("test5")
         adjustment(name, pg, False)
 
+        print("test6")
         btrRobotino.w_goToWall(0.17)
 
         #btrRobotino.w_bringWork()
@@ -966,6 +972,18 @@ if __name__ == '__main__':
         graspTransparent()
         challengeFlag = False
         break
+    
+    if (challenge == "beacon"):
+        sendBeacon()
+        print("Game status is ", refboxGamePhase)
+
+    if (challenge == "clockwise"):
+        btrRobotino.w_turnClockwise()
+
+    if (challenge == "camera"):
+        btrRobotino.w_goToInputVelt()
+        btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToWall(0.4)
 
     sendBeacon()
     rate.sleep()

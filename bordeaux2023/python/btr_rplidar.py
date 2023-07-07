@@ -108,7 +108,7 @@ def calcPoint():
   # print("dist", ((leftPoint.x - rightPoint.x) ** 2 + (leftPoint.y - rightPoint.y) **2) ** 0.5)
 
   forwardPoint = polarToPoint(scanDistance(START_ANGLE + END_ANGLE) / 2, (START_ANGLE + END_ANGLE) / 2)
-  radius = 0.3
+  radius = 0.24
   for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
     obstaclePoint = polarToPoint(scanDistance(i), i)
     if (forwardPoint.x > obstaclePoint.x):
