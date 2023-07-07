@@ -96,6 +96,7 @@ class btr2023(object):
     def __init__(self, topicName):
         self.btrOdometry = Odometry()
         self.topicName = topicName
+        self.machineList = ""
 
         # rospy.init_node('btr2023')
         self.sub1 = rospy.Subscriber(self.topicName + "/odom", Odometry, self.robotinoOdometry)

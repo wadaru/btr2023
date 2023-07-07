@@ -251,6 +251,8 @@ def w_findMPS():
         machineReport.zone = zone
         machineReport.rotation = btrRobotino.MPS_phi
         sendMachineReport(machineReport)
+
+        btrRobotino.w_addMPS(name, btrRobotino.MPS_zone, btrRobotino.MPS_phi)
     return btrRobotino.MPS_find
 
 def goToPoint(x, y, phi):
@@ -398,19 +400,13 @@ def startGrasping_by_c920():
         print("{} / 3 repeation".format(_+1))
         challengeFlag = False
 
-        print("test1")
         btrRobotino.w_goToWall(0.90)
-        print("test2")
         btrRobotino.w_goToOutputVelt()
-        print("test3")
         btrRobotino.w_parallelMPS()
-        print("test4")
         btrRobotino.w_goToWall(0.40)
 
-        print("test5")
         adjustment(name, pg, False)
 
-        print("test6")
         btrRobotino.w_goToWall(0.17)
 
         #btrRobotino.w_bringWork()
@@ -477,7 +473,12 @@ def zoneToPose2D(zone):
 def setMPStoField():
     global btrField
     point = Pose2D()
-    for machine in refboxMachineInfo.machines:
+    if (len(refboxMachineInfo.machines) > 0):
+        btrRobotino.machineList = ""
+        for machine in refboxMachineInfo.machines:
+            btrRobotino.w_addMPS(machine.name, machine.zone, machine.phi)
+
+    for machine in btrRobotino.machineInfo():
         point = zoneToPose2D(machine.zone)
         print("setMPS: ", machine.name, machine.zone, point.x, point.y)
         if (point.x == 0 and point.y == 0):
@@ -629,8 +630,8 @@ def getNextPoint(pointNumber):
 def startNavigation():
     global btrField
     # initField()
-    print("----")
-    setMPStoField()
+    # print("----")
+    # setMPStoField()
     print("====")
     oldTheta = 90
     for pointNumber in range(12 * 0 + 999):
@@ -639,26 +640,34 @@ def startNavigation():
         if (len(route) == 0):
             print("finished")
         else:
-            point = getNextPoint(pointNumber)
-            robot = btrOdometry.pose.pose.position
             while True:
                 point = getNextPoint(pointNumber)
-                if (point.x > 0):
-                    point.x = point.x * 1.0 - 0.5
-                else:
-                    point.x = point.x * 1.0 + 0.5
-                point.y = point.y * 1.0 - 0.5
-                if (point.theta == 360):
-                    goToPoint(point.x, point.y, oldTheta)
+                if (navToPoint(point) == True):
                     break
-                else:
-                    goToPoint(point.x, point.y, point.theta)
-                oldTheta = point.theta
-
             print("arrived #", pointNumber + 1, ": point")
             for i in range(4):
                 sendBeacon()
                 rospy.sleep(2)
+
+def navToPoint(point):
+    global oldTheta
+    setMPStoField()
+    
+    btrRobotino.w_waitOdometry()
+    robot = btrOdometry.pose.pose.position
+
+    if (point.x > 0):
+        point.x = point.x * 1.0 - 0.5
+    else:
+        point.x = point.x * 1.0 + 0.5
+        point.y = point.y * 1.0 - 0.5
+        if (point.theta == 360):
+            goToPoint(point.x, point.y, oldTheta)
+            return true
+        else:
+            goToPoint(point.x, point.y, point.theta)
+            oldTheta = point.theta
+            return false
 
     print("****")
     # print(refboxNavigationRoutes)
@@ -782,6 +791,20 @@ if __name__ == '__main__':
         
         goToPoint(zoneX["S31"], zoneY["S31"], 90)
         break
+
+    if (challenge == "exploration" and challengeFlag):
+        challengeFlag = False
+        # goTo S32
+        goToPoint(zoneX["S32"], zoneY["S32"], 90)
+        for i in range(9):
+            w_findMPS()
+            btrRobotino.w_robotinoTurnAbs(45 * i)
+        # goTo S34
+        for ZONE in ["S34", "S44", "S42", "S22", "S24", "S32"]
+            navToPoint(zoneX[ZONE], zoneY[ZONE], 90)
+            for i in range(9):
+                w_findMPS()
+                btrRobotino.w_robotinoTurnAbs(45 * i)
 
     if (challenge == "gripping" and challengeFlag):
         slotNo = 3
@@ -925,23 +948,11 @@ if __name__ == '__main__':
             
     if ( challenge == "gazebo"):
         sendBeacon()
-        print(challenge)
+        #/ print(challenge)
         if (refboxGamePhase == 30 and challengeFlag):
-            if (refboxTime.sec <= 180): # for exploration
-                challengeFlag = False
-                print("GoToExploration")
-                goToPoint(zoneX["51"], zoneY["51"],  90)
-                goToPoint(zoneX["52"], zoneY["52"],   0)
-                # findMPS
-                for i in range(-2, 2):
-                    # btrRobotino.w_findMPS()
-                    w_findMPS()
-                    btrRobotino.w_robotinoTurnAbs(45 * i)
-
-    if ( challenge == "TEST" and challengeFlag):
-        challengeFlag = False
-        sendBeacon()
-        btrRobotino.w_goToMPSCenterLRF()
+            # make c0
+            print(refboxMachineInfo)
+           
 
     if ( challenge == "test" and challengeFlag):
         challengeFlag = False
