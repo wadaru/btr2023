@@ -909,8 +909,8 @@ if __name__ == '__main__':
         goToPoint(zoneX["S31"], zoneY["S31"], 90)
         break
 
-    # if (challenge == "exploration" and challengeFlag and refboxGamePhase == 20 ):
-    if (challenge == "gazebo1" and challengeFlag):
+    if (challenge == "exploration" and challengeFlag and refboxGamePhase == 20 ):
+    # if (challenge == "gazebo1" and challengeFlag):
         challengeFlag = False
         # goTo S32
         goToPoint(zoneX["S32"], zoneY["S32"], 90)
