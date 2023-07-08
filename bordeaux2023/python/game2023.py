@@ -170,8 +170,9 @@ def sendBeacon():
         print("Service call failed: %s"%e)
 
 def sendMachineReport(report):
+    global machineReport
     sendReport = SendMachineReport()
-    machineReport = MachineReportEntryBTR()
+    machineReport = MachineReportEntryBTR
     machineReport.name = report.name
     machineReport.type = report.type
     machineReport.zone = report.zone
@@ -180,8 +181,8 @@ def sendMachineReport(report):
         sendReport.team_color = 1
     else:
         sendReport.team_color = 2
-    machineReportEntryBTR = [machineReport]
-    sendReport.machines = machineReportEntryBTR
+    MachineReportEntryBTR = [machineReport]
+    sendReport.machines = MachineReportEntryBTR
     print("machineReport: ", machineReport)
 
     rospy.wait_for_service('/rcll/send_machine_report')
@@ -237,7 +238,8 @@ def robotinoOdometry(data):
 
 def w_findMPS():
     btrRobotino.w_getMPSLocation()
-    if (btrRobotino.MPS_find == True):
+    if (btrRobotino.MPS_find == True and btrRobotino.MPS_id > 0):
+        print(btrRobotino.MPS_id)
         name = machineName[btrRobotino.MPS_id]
         zone = btrRobotino.MPS_zone
         machineReport.name = name[0: len(name) - 2]
@@ -476,18 +478,19 @@ def setMPStoField():
     global btrField
     point = Pose2D()
     if (len(refboxMachineInfo.machines) > 0):
-        btrRobotino.machineList = ""
+        btrRobotino.machineList = MachineReportEntryBTR()
         for machine in refboxMachineInfo.machines:
             btrRobotino.w_addMPS(machine.name, machine.zone, machine.phi)
 
-    for machine in btrRobotino.machineList:
-        print(machine)
-        point = zoneToPose2D(machine.zone)
-        print("setMPS: ", machine.name, machine.zone, point.x, point.y)
-        if (point.x == 0 and point.y == 0):
-            print("received NULL data for MPS", machine.name)
-        else:
-            setField(point.x, point.y, MAXSTEP)
+    if (len(btrRobotino.machineList) > 0):
+        for machine in btrRobotino.machineList:
+            print(machine)
+            point = zoneToPose2D(machine.zone)
+            print("setMPS: ", machine.name, machine.zone, point.x, point.y)
+            if (point.x == 0 and point.y == 0):
+                print("received NULL data for MPS", machine.name)
+            else:
+                setField(point.x, point.y, MAXSTEP)
 
 def getStep(x, y):
     global FIELDMINX, FIELDMAXX, FIELDMINY, FIELDMAXY, MAXSTEP
@@ -676,6 +679,28 @@ def navToPoint(point):
     # print(refboxNavigationRoutes)
     # print(refboxMachineInfo)
 
+def startProductionC0():
+    print("Production Challenge started")
+    global btrField
+    # initField()
+    # print("----")
+    # setMPStoField()
+    print("====")
+    oldTheta = 90
+    for pointNumber in range(12 * 0 + 999):
+        print(pointNumber)
+        route = refboxNavigationRoutes.route
+        if (len(route) == 0):
+            print("finished")
+        else:
+            while True:
+                point = getNextPoint(pointNumber)
+                if (navToPoint(point) == True):
+                    break
+            print("arrived #", pointNumber + 1, ": point")
+            for i in range(4):
+                sendBeacon()
+                rospy.sleep(2)
 
 # main
 #

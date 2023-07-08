@@ -26,6 +26,7 @@ from rcll_btr_msgs.msg import TagInfoResponse, TagLocationResponse
 from rcll_btr_msgs.srv import SetOdometry, SetPosition, SetVelocity, \
                               SetDistance, TagInfo,     TagLocation
 from robotino_msgs.srv import ResetOdometry
+from rcll_ros_msgs.msg import MachineReportEntryBTR
 
 machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-I",
                 201 : "M-CS1-O", 202 : "M-CS1-I", 203 : "M-CS2-O", 204 : "M-CS2-I",
