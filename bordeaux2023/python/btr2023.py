@@ -96,7 +96,6 @@ class btr2023(object):
     def __init__(self, topicName):
         self.btrOdometry = Odometry()
         self.topicName = topicName
-        self.machineList = MachineReportEntryBTR()
 
         # rospy.init_node('btr2023')
         self.sub1 = rospy.Subscriber(self.topicName + "/odom", Odometry, self.robotinoOdometry)
@@ -176,7 +175,7 @@ class btr2023(object):
                 v.y = velocity1(diff_y)
             v.theta = 0
             # print(diff_x, diff_y)
-            # print("robotinoMove", diff_x, self.forwardPoint.x)
+            print("robotinoMove", diff_x, self.forwardPoint.x)
             if (self.forwardPoint.x < diff_x):
                 if (self.forwardPoint.x < 1.0):
                     v.x = v.x / 1.0 * self.forwardPoint.x
@@ -507,16 +506,15 @@ class btr2023(object):
         zone_y = int(abs(self.MPS_y) / 1.0) + 1
         self.MPS_zone = zone + "_Z" + str(zone_x * 10 + zone_y)
 
-    def w_addMPS(self, name, zone, phi):
-        machine = MachineReportEntryBTR()
-        machine.name = name
-        machine.zone = zone
-        machine.rotation = phi
+    def w_addMPS(self, name, zone):
+        self.machineName = name
+        self.machineZone = zone
+        # machine.rotation = phi
         if (len(self.machineList) == 0):
-            self.machineList = machine
+            self.machineList = [[name, zone]]
         else:
             if (not (name in self.machineList)):
-                self.machineList.append(machine)
+                self.machineList.append([name, zone])
 # main
 #
 if __name__ == '__main__':
