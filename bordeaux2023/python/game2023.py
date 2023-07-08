@@ -707,6 +707,21 @@ def startProductionC0():
                 sendBeacon()
                 rospy.sleep(2)
 
+def startOpen():
+    print("Run demonstration program")
+    challengeFlag = False
+
+    btrRobotino.w_goToWall(0.90)
+    btrRobotino.w_goToOutputVelt()
+    btrRobotino.w_parallelMPS()
+    btrRobotino.w_goToWall(0.40)
+    btrRobotino.w_robotinoMove(0, 0.1)
+    btrRobotino.w_parallelMPS()
+    btrRobotino.w_pick_rs()
+    btrRobotino.w_move_scan()
+    time.sleep(3)
+    #btrRobotino.w_put_rs()
+
 # main
 #
 if __name__ == '__main__':
@@ -1013,6 +1028,11 @@ if __name__ == '__main__':
 
     if (challenge == "test_C0"):
         graspTransparent()
+        challengeFlag = False
+        break
+    
+    if (challenge == "testOpen"):
+        startOpen()
         challengeFlag = False
         break
     
