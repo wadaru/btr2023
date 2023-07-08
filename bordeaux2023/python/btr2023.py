@@ -45,25 +45,25 @@ camera_offset = 0.1
 # So, the best speed is diff / 0.1
 # The unit of turn angle is Deg, but the unit of turn velocity is Rad.
 # So, the best speed is diff / 0.1 / 180 * 3.14 = diff * 0.17 (=0.15).
-turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,    10,   15,   25, 999]) # sim
-turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,  0.01,     0,    0, -0.01, -0.02, -0.02, -0.1, -1.0,  -1]) # sim
+turn_angle    = numpy.array([-999, -25, -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,    10,   15,   25, 999])
+turn_velocity = numpy.array([   1, 1.0, 0.1, 0.02, 0.02,  0.01,     0,    0, -0.01, -0.02, -0.02, -0.1, -1.0,  -1])
 # turn_angle    = numpy.array([-999, -25,  -15,  -10,   -5, -0.05, -0.05, 0.05,  0.05,     5,   10,   15,   25, 999])
 # turn_velocity = numpy.array([   2, 2.0,  2.0,  1.5, 0.75,  0.02,     0,    0, -0.02, -0.75, -1.5, -2.0, -2.0,  -2])
 
+# go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
+# go_velocity = numpy.array([ -0.1, -0.1 , -0.01, -0.01 ,     0,    0, 0.01 , 0.01, 0.1 ,  0.1])
 go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999])
-go_velocity = numpy.array([ -0.1, -0.1 , -0.01, -0.01 ,     0,    0, 0.01 , 0.01, 0.1 ,  0.1])
-#go_distance = numpy.array([-9999, -0.05, -0.02, -0.015, -0.01, 0.01, 0.015, 0.02, 0.05, 9999]) # sim
-#go_velocity = numpy.array([ -0.5, -0.5 , -0.20, -0.15 ,     0,    0, 0.15 , 0.20, 0.5 ,  0.5]) # sim
+go_velocity = numpy.array([ -0.5, -0.5 , -0.20, -0.15 ,     0,    0, 0.15 , 0.20, 0.5 ,  0.5])
 
 # go_distance_fast = numpy.array([-9999, -0.02, -0.01, -0.001, -0.0009, 0, 0.001, 0.0011, 0.005, 0.010, 0.020, 9999])
 # go_velocity_fast = numpy.array([ -0.1, -0.1 , -0.1 , -0.01 ,       0, 0, 0.01 , 0.01  , 0.015, 0.1  , 0.1  ,  0.1])
-go_distance_fast = numpy.array([-9999, -0.2, -0.1, -0.01, -0.009, 0, 0.01, 0.011,  0.05, 0.10, 0.20, 9999]) # sim
-go_velocity_fast = numpy.array([ -0.2, -0.2, -0.1, -0.01,      0, 0, 0.01,  0.01, 0.015, 0.1 , 0.2 ,  0.2]) # sim
+go_distance_fast = numpy.array([-9999, -0.2, -0.1, -0.01, -0.009, 0, 0.01, 0.011,  0.05, 0.10, 0.20, 9999])
+go_velocity_fast = numpy.array([ -0.2, -0.2, -0.1, -0.01,      0, 0, 0.01,  0.01, 0.015, 0.1 , 0.2 ,  0.2])
 
 # move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.009, 0.009, 0.01, 0.10, 0.5, 1.0, 99999])
 # move_velocity = numpy.array([  -0.3, -0.3, -0.1, -0.05, -0.01,      0,     0, 0.01, 0.05, 0.1, 0.3, 0.3  ])
-move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.009, 0.009, 0.01, 0.10, 0.5, 1.0, 99999]) # sim
-move_velocity = numpy.array([  -0.3, -0.3, -0.1, -0.05, -0.01,      0,     0, 0.01, 0.05, 0.1, 0.3, 0.3  ]) # sim
+move_distance = numpy.array([-99999, -1.0, -0.5, -0.10, -0.01, -0.009, 0.009, 0.01, 0.10, 0.5, 1.0, 99999])
+move_velocity = numpy.array([  -0.3, -0.3, -0.1, -0.05, -0.01,      0,     0, 0.01, 0.05, 0.1, 0.3, 0.3  ])
 
 def quaternion_to_euler(quaternion):
     """Convert Quaternion to Euler Angles
@@ -97,7 +97,6 @@ class btr2023(object):
     def __init__(self, topicName):
         self.btrOdometry = Odometry()
         self.topicName = topicName
-        self.machineList = MachineReportEntryBTR()
 
         # rospy.init_node('btr2023')
         self.sub1 = rospy.Subscriber(self.topicName + "/odom", Odometry, self.robotinoOdometry)
@@ -130,7 +129,6 @@ class btr2023(object):
         seq = self.btrOdometry.header.seq
         while (seq == self.btrOdometry.header.seq):
           self.rate.sleep()
-          # print("wait:", seq)
 
     def w_resetOdometry(self, data):
         odometry = ResetOdometry()
@@ -178,7 +176,7 @@ class btr2023(object):
                 v.y = velocity1(diff_y)
             v.theta = 0
             # print(diff_x, diff_y)
-            # print("robotinoMove", diff_x, self.forwardPoint.x)
+            print("robotinoMove", diff_x, self.forwardPoint.x)
             if (self.forwardPoint.x < diff_x):
                 if (self.forwardPoint.x < 1.0):
                     v.x = v.x / 1.0 * self.forwardPoint.x
@@ -204,14 +202,12 @@ class btr2023(object):
         # self.w_goToWall(15)
 
     def w_robotinoTurnAbs(self, turnAngle):
-        # while True:
-        #     print("turn")
-        #     nowAngle = self.btrOdometry
-        #     # print(nowAngle.pose.pose.position.z)
-        #    if (nowAngle.header.seq != 0):
-        #         break
-        self.w_waitOdometry()
-        nowAngle = self.btrOdometry
+        while True:
+            print("turn")
+            nowAngle = self.btrOdometry
+            # print(nowAngle.pose.pose.position.z)
+            if (nowAngle.header.seq != 0):
+                break
 
         targetAngle = turnAngle - nowAngle.pose.pose.position.z
         self.w_robotinoTurn(targetAngle)
@@ -220,21 +216,19 @@ class btr2023(object):
         global turn_angle, turn_velocity
         velocity1 = interpolate.interp1d(turn_angle, turn_velocity)
 
-        # while True:
-        #     print("turn")
-        #     nowAngle = self.btrOdometry
-        #     # print(nowAngle.pose.pose.position.z)
-        #     if (nowAngle.header.seq != 0):
-        #         break
-        self.w_waitOdometry()
-        nowAngle = self.btrOdometry
+        while True:
+            print("turn")
+            nowAngle = self.btrOdometry
+            # print(nowAngle.pose.pose.position.z)
+            if (nowAngle.header.seq != 0):
+                break
 
         targetAngle = nowAngle.pose.pose.position.z + turnAngle
         if (targetAngle > 180):
             targetAngle -= 360
         if (targetAngle < -180):
             targetAngle += 360
-        print("targetAngle:", targetAngle)
+
         v = Pose2D()
         v.x = 0
         v.y = 0
@@ -513,16 +507,15 @@ class btr2023(object):
         zone_y = int(abs(self.MPS_y) / 1.0) + 1
         self.MPS_zone = zone + "_Z" + str(zone_x * 10 + zone_y)
 
-    def w_addMPS(self, name, zone, phi):
-        machine = MachineReportEntryBTR()
-        machine.name = name
-        machine.zone = zone
-        machine.rotation = phi
+    def w_addMPS(self, name, zone):
+        self.machineName = name
+        self.machineZone = zone
+        # machine.rotation = phi
         if (len(self.machineList) == 0):
-            self.machineList = machine
+            self.machineList = [[name, zone]]
         else:
             if (not (name in self.machineList)):
-                self.machineList.append(machine)
+                self.machineList.append([name, zone])
 # main
 #
 if __name__ == '__main__':

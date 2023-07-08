@@ -477,20 +477,21 @@ def zoneToPose2D(zone):
 def setMPStoField():
     global btrField
     point = Pose2D()
+     
     if (len(refboxMachineInfo.machines) > 0):
-        btrRobotino.machineList = MachineReportEntryBTR()
+        btrRobotino.machineList = ""
         for machine in refboxMachineInfo.machines:
-            btrRobotino.w_addMPS(machine.name, machine.zone, machine.phi)
+            btrRobotino.w_addMPS(machine.name, machine.zone)
 
-    if (len(btrRobotino.machineList) > 0):
-        for machine in btrRobotino.machineList:
-            print(machine)
-            point = zoneToPose2D(machine.zone)
-            print("setMPS: ", machine.name, machine.zone, point.x, point.y)
-            if (point.x == 0 and point.y == 0):
-                print("received NULL data for MPS", machine.name)
-            else:
-                setField(point.x, point.y, MAXSTEP)
+    print(btrRobotino.machineList)
+    for machine in btrRobotino.machineList:
+        print(machine)
+        point = zoneToPose2D(machine[1])
+        print("setMPS: ", machine[0], machine[1], point.x, point.y)
+        if (point.x == 0 and point.y == 0):
+            print("received NULL data for MPS", machine.name)
+        else:
+            setField(point.x, point.y, MAXSTEP)
 
 def getStep(x, y):
     global FIELDMINX, FIELDMAXX, FIELDMINY, FIELDMAXY, MAXSTEP
@@ -640,9 +641,13 @@ def startNavigation():
     # setMPStoField()
     print("====")
     oldTheta = 90
-    for pointNumber in range(12 * 0 + 999):
+    while (len(refboxNavigationRoutes.route) == 0):
+        btrRobotino.rate.sleep()
+        
+    for pointNumber in range(12 + 999):
         print(pointNumber)
         route = refboxNavigationRoutes.route
+        print(route)
         if (len(route) == 0):
             print("finished")
         else:
@@ -934,7 +939,8 @@ if __name__ == '__main__':
         challengeFlag = False
         break
 
-    if (challenge == "navigationTest" and challengeFlag):
+    # if (challenge == "navigationTest" and challengeFlag):
+    if (challenge == "gazebo" and challengeFlag):
         startNavigation()
         challengeFlag = False
         break
@@ -990,21 +996,15 @@ if __name__ == '__main__':
         challengeFlag = False
         sendBeacon()
         
-        print("test1")
         goToPoint(zoneX["51"], zoneY["51"],  90)
-        print("test2")
         goToPoint(zoneX["52"], zoneY["52"],   0)
-        print("test3")
 
         # if (btrRobotino.w_findMPS() == True):
         if (w_findMPS() == True):
-          print("test4")
           btrRobotino.w_goToOutputVelt()
-          print("test5")
         # btrRobotino.w_goToWall(0.015 + 0.020)
         # btrRobotino.w_parallelMPS()
         # btrRobotino.w_findMPS()
-        print("test finished")
 
     if (challenge == "test_by_c920"):
         startGrasping_by_c920()
