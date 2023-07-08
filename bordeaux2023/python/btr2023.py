@@ -112,6 +112,7 @@ class btr2023(object):
         self.leftPoint = data
         self.rightPoint = data
         self.forwardPoint = data
+        self.machineList = ""
 
         self.startRpLidar()
 
@@ -176,7 +177,7 @@ class btr2023(object):
                 v.y = velocity1(diff_y)
             v.theta = 0
             # print(diff_x, diff_y)
-            print("robotinoMove", diff_x, self.forwardPoint.x)
+            # print("robotinoMove", diff_x, self.forwardPoint.x)
             if (self.forwardPoint.x < diff_x):
                 if (self.forwardPoint.x < 1.0):
                     v.x = v.x / 1.0 * self.forwardPoint.x

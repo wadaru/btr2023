@@ -43,10 +43,14 @@ from rcll_ros_msgs.srv import SendBeaconSignal, SendMachineReport, \
 
 TEAMNAME = "BabyTigers-R"
 
-FIELDMINX = -5
-FIELDMAXX = -1
-FIELDMINY =  1
-FIELDMAXY =  5
+# FIELDMINX = -5
+# FIELDMAXX = -1
+# FIELDMINY =  1
+# FIELDMAXY =  5
+FIELDMINX = -7
+FIELDMAXX = 7
+FIELDMINY = 1
+FIELDMAXY = 8
 FIELDSIZEX = (FIELDMAXX - FIELDMINX) + 1
 FIELDSIZEY = (FIELDMAXY - FIELDMINY) + 1
 FIELDSIZE = FIELDSIZEX * FIELDSIZEY
@@ -76,6 +80,7 @@ machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-
                 131 : "C-DS-O",  132 : "C-DS-I",  231 : "M-DS-O",  232 : "M-DS-I",
                 141 : "C-SS-O",  142 : "C-SS-I",  241 : "M-SS-O",  242 : "M-SS-I",
                 301 : "UMPS-1",  302 : "UMPS-2" }
+oldTheta = 0
 
 def quaternion_to_euler(quaternion):
     """Convert Quaternion to Euler Angles
@@ -240,6 +245,9 @@ def w_findMPS():
     btrRobotino.w_getMPSLocation()
     if (btrRobotino.MPS_find == True and btrRobotino.MPS_id > 0):
         print(btrRobotino.MPS_id)
+        if not (btrRobotino.MPS_id in machineName):
+            print(btrRobotino.MPS_id, "is not ID?")
+            return False
         name = machineName[btrRobotino.MPS_id]
         zone = btrRobotino.MPS_zone
         machineReport.name = name[0: len(name) - 2]
@@ -272,6 +280,7 @@ def goToPoint(x, y, phi):
       btrRobotino.w_robotinoTurn(turn - nowPhi)
       btrRobotino.w_robotinoMove(dist, 0)
     else:
+      print("dist <= 0.30")
       moveX = x - nowX
       moveY = y - nowY
       # print(moveX, moveY, nowPhi)
@@ -437,7 +446,8 @@ def startGrasping_by_c920():
 
 def initField():
     global btrField
-    btrField = [[0 for y in range(FIELDSIZEY)] for x in range(FIELDSIZEX)]
+    # btrField = [[0 for y in range(FIELDSIZEY)] for x in range(FIELDSIZEX)]
+    btrField = [[0 for x in range(FIELDSIZEX)] for y in range(FIELDSIZEY)]
     for zone in range(2):
         for x in range(1, 8):
             for y in range(1, 8):
@@ -454,7 +464,6 @@ def initField():
 
 def setField(x, y, number):
     global FIELDMINX, FIELDMINY
-    # print(x, FIELDMINX, y, FIELDMINX, number)
     btrField[y - FIELDMINY][x - FIELDMINX] = number
 
 def getField(x, y):
@@ -505,18 +514,49 @@ def getStep(x, y):
 
 def wallCheck(x, y, dx, dy):
     notWallFlag = True
-    if ((x == -5 and y == 1) and (dx ==  0 and dy ==  1)):
-        notWallFlag = False
-    if ((x == -4 and y == 1) and (dx ==  0 and dy ==  1)):
-        notWallFlag = False
-    if ((x == -3 and y == 1) and (dx ==  1 and dy ==  0)):
-        notWallFlag = False
-    if ((x == -2 and y == 1) and (dx == -1 and dy ==  0)):
-        notWallFlag = False
-    if ((x == -5 and y == 2) and (dx ==  0 and dy == -1)):
-        notWallFlag = False
-    if ((x == -4 and y == 2) and (dx ==  0 and dy == -1)):
-        notWallFlag = False
+    # magenta side
+    if (FIELDMINX == -5):
+        if ((x == -5 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x == -4 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x == -3 and y == 1) and (dx ==  1 and dy ==  0)):
+            notWallFlag = False
+        if ((x == -2 and y == 1) and (dx == -1 and dy ==  0)):
+            notWallFlag = False
+        if ((x == -5 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+        if ((x == -4 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+    else:
+        # amgenta side
+        if ((x == -6 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x == -7 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x == -5 and y == 1) and (dx ==  1 and dy ==  0)):
+            notWallFlag = False
+        if ((x == -4 and y == 1) and (dx == -1 and dy ==  0)):
+            notWallFlag = False
+        if ((x == -6 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+        if ((x == -6 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+
+        # cyan side
+        if ((x ==  6 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x ==  7 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x ==  5 and y == 1) and (dx == -1 and dy ==  0)):
+            notWallFlag = False
+        if ((x ==  4 and y == 1) and (dx ==  1 and dy ==  0)):
+            notWallFlag = False
+        if ((x ==  6 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+        if ((x ==  6 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+
     return notWallFlag
 
 def getNextDirection(x, y):
@@ -530,6 +570,7 @@ def getNextDirection(x, y):
             minStep = getField(x + dx, y + dy)
             nextD.x = dx
             nextD.y = dy
+    print("nextDirection", dx, dy, "now: ",getField(x, y), "next: ", getField(x +dx, y +dy))
     return nextD
 
 def makeNextPoint(destination):
@@ -548,14 +589,34 @@ def makeNextPoint(destination):
                                        getStep(x + 1, y), getStep(x, y + 1)) \
                                    + 1)
                     # wall information
-                    if (x == -5 and y == 1): # M_Z51 = M_Z41 + 1
-                        setField(x, y, getStep(x + 1, y) + 1)
-                    if (x == -4 and y == 1): # M_Z41 = M_Z31 + 1
-                        setField(x, y, getStep(x + 1, y) + 1)
-                    if (x == -3 and y == 1): # M_Z31 = M_Z32 + 1
-                        setField(x, y, getStep(x, y + 1) + 1)
-                    if (x == -2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
-                        setField(x, y, min(getStep(x, y + 1), getStep(x + 1, y)) + 1)
+                    if (FIELDMINX == -5):
+                        if (x == -5 and y == 1): # M_Z51 = M_Z41 + 1
+                            setField(x, y, getStep(x + 1, y) + 1)
+                        if (x == -4 and y == 1): # M_Z41 = M_Z31 + 1
+                            setField(x, y, getStep(x + 1, y) + 1)
+                        if (x == -3 and y == 1): # M_Z31 = M_Z32 + 1
+                            setField(x, y, getStep(x, y + 1) + 1)
+                        if (x == -2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
+                            setField(x, y, min(getStep(x, y + 1), getStep(x + 1, y)) + 1)
+                    else:
+                        if (x == -6 and y == 1): # M_Z61 = M_Z51 + 1
+                            setField(x, y, getStep(x + 1, y) + 1)
+                        if (x == -7 and y == 1): # M_Z71 = M_Z61 + 1
+                            setField(x, y, getStep(x + 1, y) + 1)
+                        if (x == -5 and y == 1): # M_Z51 = M_Z52 + 1
+                            setField(x, y, getStep(x, y + 1) + 1)
+                        if (x == -4 and y == 1): # M_Z41 <= min(M_Z42, MZ_31) + 1
+                            setField(x, y, min(getStep(x, y + 1), getStep(x + 1, y)) + 1)
+                        if (x ==  6 and y == 1): # C_Z61 = C_Z51 + 1
+                            setField(x, y, getStep(x - 1, y) + 1)
+                        if (x ==  7 and y == 1): # C_Z71 = C_Z61 + 1
+                            setField(x, y, getStep(x - 1, y) + 1)
+                        if (x ==  5 and y == 1): # C_Z51 = C_Z52 + 1
+                            setField(x, y, getStep(x, y + 1) + 1)
+                        if (x ==  4 and y == 1): # C_Z41 <= min(C_Z42, CZ_31) + 1
+                            setField(x, y, min(getStep(x, y + 1), getStep(x - 1, y)) + 1)
+
+
 
     # get optimized route
     if (False):
@@ -592,8 +653,10 @@ def makeNextPoint(destination):
         if (nextD.x == dx and nextD.y == dy):
             theta = phi
 
-    goToPoint(robotReal.x, robotReal.y, theta) # turn for the next point.
+    # goToPoint(robotReal.x, robotReal.y, theta) # turn for the next point.
+    btrRobotino.w_robotinoTurnAbs(theta) # only turn
 
+    print("direction:", nextD.x, nextD.y)
     while True:
         # print(point)
         if getField(point.x, point.y) == 0:
@@ -630,12 +693,15 @@ def getNextPoint(pointNumber):
     # zone = route[pointNumber].zone
     zone = route[0].zone
 
-    print(zone)
+    print("getNextPoint:", zone)
+    if (btrOdometry.pose.pose.position.x > 0):
+        zone = zone - 1000
+    print("gazebo zone:", zone)
     point = makeNextPoint(zone)
     return point
 
 def startNavigation():
-    global btrField
+    global btrField, oldTheta
     # initField()
     # print("----")
     # setMPStoField()
@@ -653,8 +719,10 @@ def startNavigation():
         else:
             while True:
                 point = getNextPoint(pointNumber)
+                print("point:", point)
                 if (navToPoint(point) == True):
                     break
+                print("not arrived?")
             print("arrived #", pointNumber + 1, ": point")
             for i in range(4):
                 sendBeacon()
@@ -671,22 +739,23 @@ def navToPoint(point):
         point.x = point.x * 1.0 - 0.5
     else:
         point.x = point.x * 1.0 + 0.5
-        point.y = point.y * 1.0 - 0.5
-        if (point.theta == 360):
-            goToPoint(point.x, point.y, oldTheta)
-            return True
-        else:
-            goToPoint(point.x, point.y, point.theta)
-            oldTheta = point.theta
-            return False
+    point.y = point.y * 1.0 - 0.5
+    print("navToPoint ", point.x, point.y, point.theta)
+    if (point.theta == 360):
+        goToPoint(point.x, point.y, oldTheta)
+        return True
+    else:
+        goToPoint(point.x, point.y, point.theta)
+        oldTheta = point.theta
+        return False
 
     print("****")
     # print(refboxNavigationRoutes)
     # print(refboxMachineInfo)
 
 def startProductionC0():
+    global oldTheta, btrField
     print("Production Challenge started")
-    global btrField
     # initField()
     # print("----")
     # setMPStoField()
@@ -718,7 +787,7 @@ if __name__ == '__main__':
       robotNum = int(args[2])
     else:
       robotNum = 1
-    if challenge == "gazebo":
+    if (challenge == "gazebo" or challenge == "gazebo1"):
       topicName = "/robotino" + str(robotNum)
 
   # valiables for refbox
@@ -825,7 +894,8 @@ if __name__ == '__main__':
         goToPoint(zoneX["S31"], zoneY["S31"], 90)
         break
 
-    if (challenge == "exploration" and challengeFlag and refboxGamePhase == 20 ):
+    # if (challenge == "exploration" and challengeFlag and refboxGamePhase == 20 ):
+    if (challenge == "gazebo1" and challengeFlag):
         challengeFlag = False
         # goTo S32
         goToPoint(zoneX["S32"], zoneY["S32"], 90)
@@ -939,8 +1009,7 @@ if __name__ == '__main__':
         challengeFlag = False
         break
 
-    # if (challenge == "navigationTest" and challengeFlag):
-    if (challenge == "gazebo" and challengeFlag):
+    if (challenge == "navigationTest" and challengeFlag):
         startNavigation()
         challengeFlag = False
         break
