@@ -15,29 +15,38 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty, EmptyResponse
 
+maxSensorDist = 20
 topicName = ""
 #
-def scanDistance(deg):
+def scanDistanceInf(deg):
   global topicName
   if (topicName == ""):
-    return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360) % 360))]
+    return scanData.ranges[int(len(scanData.ranges) / 360 * ((deg + 360 - 90) % 360))]
   else:
     # the range of gazebo's laser is from START_ANGLE to END_ANGLE?
     return scanData.ranges[int(len(scanData.ranges) / (END_ANGLE - START_ANGLE) * (deg - START_ANGLE))]
 
+def scanDistance(deg):
+  dist = scanDistanceInf(deg)
+  if (math.isinf(dist) or math.isnan(dist)):
+      return dist # maxSensorDist
+  else:
+      return dist
 #
 def polarToPoint(distance, angle):
   global topicName
   point = Point()
-  if (topicName == ""):
-    radian = math.radians(angle)
-  else:
-    radian = math.radians(angle)
+  # if (topicName == ""):
+  #   radian = math.radians(angle - 90)
+  #   point.z = angle - 90
+  # else:
+  radian = math.radians(angle)
+  point.z = angle
   # point.x = distance * math.cos(radian)
   # point.y = distance * math.sin(radian)
   point.x = distance * math.cos(radian)
   point.y = distance * math.sin(radian)
-  point.z = angle + 0
+  # point.z = angle + 0
   return point
 
 #
@@ -49,20 +58,25 @@ def calcAngle(pointA, pointB):
 
 #
 def findEdge(startAngle, angleStep):
-  oldPoint = polarToPoint(scanDistance(startAngle - angleStep), startAngle - angleStep)
+  startPoint = polarToPoint(scanDistance(startAngle - angleStep), startAngle - angleStep)
+  oldPoint = startPoint
   i = startAngle
   oldAngle = -360
 
   while True:
     nowPoint = polarToPoint(scanDistance(i), i)
-    if (math.isinf(scanDistance(i))):
-      break
-    dist = scanDistance(i - angleStep) - scanDistance(i)
-    if (dist > 0.10):
+    # if (math.isinf(scanDistance(i))):
+    #   break
+    microAngle = calcAngle(oldPoint, nowPoint)
+    macroAngle = calcAngle(startPoint, nowPoint)
+    diff = abs(microAngle - macroAngle)
+    if (diff > 15):
+      # print("findEdge", startPoint, nowPoint, diff)
       break
     i = i + angleStep
     if (i < -180 or i > 180):
       break
+    oldPoint = nowPoint
   
   # print("findEdge: ", i - angleStep, scanDistance(i - angleStep))
   return polarToPoint(scanDistance(i - angleStep), i - angleStep)
@@ -70,9 +84,13 @@ def findEdge(startAngle, angleStep):
 #
 def calcPoint():
   global centerPoint, closePoint, leftPoint, rightPoint, forwardPoint
-  minDistance = scanDistance((START_ANGLE + END_ANGLE) / 2)
-  minAngle = (START_ANGLE + END_ANGLE) / 2
+  CENTER_ANGLE = (START_ANGLE + END_ANGLE) / 2
+  minDistance = scanDistance(CENTER_ANGLE)
+  minAngle = CENTER_ANGLE
   centerPoint = polarToPoint(minDistance, minAngle)
+  leftPoint5 = polarToPoint(scanDistance(CENTER_ANGLE + 5), CENTER_ANGLE + 5)
+  rightPoint5 = polarToPoint(scanDistance(CENTER_ANGLE - 5), CENTER_ANGLE - 5)
+  centerPoint.z = calcAngle(leftPoint5, rightPoint5)
   # print(minDistance, minAngle)
   # print(len(scanData.ranges) / 360 , (((minAngle + 180 + 45) + 360) % 360))
 
@@ -84,16 +102,16 @@ def calcPoint():
   closePoint = polarToPoint(minDistance, minAngle)
 
   # find the left edge and right edge
-  leftPoint  = findEdge(minAngle - 1, -1)
-  rightPoint = findEdge(minAngle + 1,  1)
+  leftPoint  = findEdge(minAngle - 1, +1)
+  rightPoint = findEdge(minAngle + 1, -1)
   # print("centerAng:", minAngle, "left:", leftPoint.z, "right:", rightPoint.z)
   # print("dist", ((leftPoint.x - rightPoint.x) ** 2 + (leftPoint.y - rightPoint.y) **2) ** 0.5)
 
   forwardPoint = polarToPoint(scanDistance(START_ANGLE + END_ANGLE) / 2, (START_ANGLE + END_ANGLE) / 2)
-  radius = 0.3
+  radius = 0.24
   for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
-    obstraclPoint = polarToPoint(scanDistance(i), i)
-    if (forwardPoint.x > obstaclPoint.x):
+    obstaclePoint = polarToPoint(scanDistance(i), i)
+    if (forwardPoint.x > obstaclePoint.x):
       if (-radius < obstaclePoint.y and obstaclePoint.y < radius):
         forwardPoint = obstaclePoint
 

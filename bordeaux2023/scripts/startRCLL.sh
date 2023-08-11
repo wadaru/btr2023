@@ -58,7 +58,7 @@ else
 	COMMAND="$COMMAND $TERM \\\"echo btr_camera.py; sleep 1; cd $PYTHON_DIR; python3 ./btr_camera.py $1 $2; bash\\\";"
 	COMMAND="$COMMAND $TERM \\\"echo btr_aruco.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_aruco.py $1 $2; bash\\\";"
 fi
-COMMAND="$COMMAND $TERM \\\"echo btr_cobotta_ros.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_cobotta_ros.py $1 $2; bash\\\";"
+COMMAND="$COMMAND $TERM \\\"echo btr_myPalletizer_ros.py; sleep 2; cd $PYTHON_DIR; python3 ./btr_myPalletizer_ros.py $1 $2; bash\\\";"
 
 COMMAND="$NEWTERM \"$COMMAND\""
 # echo $COMMAND

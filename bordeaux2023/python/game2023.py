@@ -8,9 +8,14 @@ import numpy
 import cv2
 # import robotino2022
 import btr2023
+# from module_photographer import module_photographer
+# from module_work_detect import module_work_detect
+# from module_line_detect import module_line_detect
 from module_photographer import module_photographer
-from module_work_detect import module_work_detect
-from module_line_detect import module_line_detect
+# from module_belt_detect import module_belt_detect
+from module_photographer_by_c920 import module_photographer_by_c920
+from module_belt_detect_for_c920 import module_belt_detect_for_c920
+from module_center_of_gravity_detect import module_center_of_gravity_detect
 
 import quaternion
 import tf
@@ -36,12 +41,16 @@ from rcll_ros_msgs.msg import BeaconSignal, ExplorationInfo, \
 from rcll_ros_msgs.srv import SendBeaconSignal, SendMachineReport, \
                               SendMachineReportBTR, SendPrepareMachine
 
-TEAMNAME = "BabyTigers"
+TEAMNAME = "BabyTigers-R"
 
-FIELDMINX = -5
-FIELDMAXX = -1
-FIELDMINY =  1
-FIELDMAXY =  5
+# FIELDMINX = -5
+# FIELDMAXX = -1
+# FIELDMINY =  1
+# FIELDMAXY =  5
+FIELDMINX = -7
+FIELDMAXX = 7
+FIELDMINY = 1
+FIELDMAXY = 8
 FIELDSIZEX = (FIELDMAXX - FIELDMINX) + 1
 FIELDSIZEY = (FIELDMAXY - FIELDMINY) + 1
 FIELDSIZE = FIELDSIZEX * FIELDSIZEY
@@ -71,6 +80,7 @@ machineName = { 101 : "C-CS1-O", 102 : "C-CS1-I", 103 : "C-CS2-O", 104 : "C-CS2-
                 131 : "C-DS-O",  132 : "C-DS-I",  231 : "M-DS-O",  232 : "M-DS-I",
                 141 : "C-SS-O",  142 : "C-SS-I",  241 : "M-SS-O",  242 : "M-SS-I",
                 301 : "UMPS-1",  302 : "UMPS-2" }
+oldTheta = 0
 
 def quaternion_to_euler(quaternion):
     """Convert Quaternion to Euler Angles
@@ -165,8 +175,9 @@ def sendBeacon():
         print("Service call failed: %s"%e)
 
 def sendMachineReport(report):
+    global machineReport
     sendReport = SendMachineReport()
-    machineReport = MachineReportEntryBTR()
+    machineReport = MachineReportEntryBTR
     machineReport.name = report.name
     machineReport.type = report.type
     machineReport.zone = report.zone
@@ -175,8 +186,8 @@ def sendMachineReport(report):
         sendReport.team_color = 1
     else:
         sendReport.team_color = 2
-    machineReportEntryBTR = [machineReport]
-    sendReport.machines = machineReportEntryBTR
+    MachineReportEntryBTR = [machineReport]
+    sendReport.machines = MachineReportEntryBTR
     print("machineReport: ", machineReport)
 
     rospy.wait_for_service('/rcll/send_machine_report')
@@ -230,6 +241,30 @@ def robotinoOdometry(data):
       sendBeacon()
       btrBeaconCounter = 0
 
+def w_findMPS():
+    btrRobotino.w_getMPSLocation()
+    if (btrRobotino.MPS_find == True and btrRobotino.MPS_id > 0):
+        print(btrRobotino.MPS_id)
+        if not (btrRobotino.MPS_id in machineName):
+            print(btrRobotino.MPS_id, "is not ID?")
+            return False
+        name = machineName[btrRobotino.MPS_id]
+        zone = btrRobotino.MPS_zone
+        machineReport.name = name[0: len(name) - 2]
+        if (name[4 : 5] == "-"):
+            machineReport.type = name[2 : 4]
+        else:
+            machineReport.type = name[2 : 5]
+        zone = int(btrRobotino.MPS_zone[3 : 5])
+        if (btrRobotino.MPS_zone[0: 1] == "M"):
+            zone = -zone
+        machineReport.zone = zone
+        machineReport.rotation = btrRobotino.MPS_phi
+        sendMachineReport(machineReport)
+
+        btrRobotino.w_addMPS(name, zone, btrRobotino.MPS_phi)
+    return btrRobotino.MPS_find
+
 def goToPoint(x, y, phi):
     btrRobotino.w_robotinoMove(0, 0)
     btrRobotino.w_waitOdometry()
@@ -245,6 +280,7 @@ def goToPoint(x, y, phi):
       btrRobotino.w_robotinoTurn(turn - nowPhi)
       btrRobotino.w_robotinoMove(dist, 0)
     else:
+      print("dist <= 0.30")
       moveX = x - nowX
       moveY = y - nowY
       # print(moveX, moveY, nowPhi)
@@ -261,35 +297,74 @@ def goToPoint(x, y, phi):
 # challenge program
 #
 
+def graspTransparent():
+    name = "ref_img"
+    pg1 = module_photographer(name)
+    pg2 = module_photographer_by_c920(name)
+
+    btrRobotino.w_goToWall(0.9)
+    btrRobotino.w_goToMPSCenter()
+
+    #btrRobotino.w_goToInputVelt()
+    btrRobotino.w_parallelMPS()
+    btrRobotino.w_goToWall(0.4)
+
+    adjustment(name, pg2, False)
+    btrRobotino.w_goToWall(0.175)
+
+    btrRobotino.w_robotinoMove(0, -0.2)
+    #btrRobotino.w_robotinoMove(5, 0)
+
+    btrRobotino.w_pick_rs()
+    btrRobotino.w_looking_for_C0()
+    a_previous = 0
+    for i in range(10):
+        pg1.run()
+        rospy.sleep(1)
+
+        d = module_center_of_gravity_detect(name)
+        ato_take = d.run()
+        d.show_result()
+        if ato_take == -1: # left
+            btrRobotino.w_robotinoMove(0, -0.02)
+        elif ato_take == 1: # right
+            btrRobotino.w_robotinoMove(0, 0.02)
+        elif ato_take == 2: # none detected
+            btrRobotino.w_robotinoMove(0, -a_previous * 0.02)
+        else:
+            break
+        a_previous = int((-ato_take)*(ato_take % 2))
+
+    btrRobotino.w_put_rs()
+
+    btrRobotino.w_move_g_C0()
+    btrRobotino.w_goToWall(0.9)
+    btrRobotino.w_goToMPSCenter()
+    #btrRobotino.w_goToMPSCenterLRF()
+    #btrRobotino.w_goToInputVelt()
+    btrRobotino.w_parallelMPS()
+    btrRobotino.w_goToWall(0.4)
+
+    adjustment(name, pg2, False)
+    btrRobotino.w_goToWall(0.17)
+    btrRobotino.w_putWork()
+
+    btrRobotino.w_goToWall(0.9)
+
+
 def startGrasping():
+    name = "ref_img"
     pg = module_photographer()
     for _ in range(3):
+        print("{} / 3 repeation".format(_+1))
         challengeFlag = False
+
         btrRobotino.w_goToOutputVelt()
-        # btrRobotino.w_robotinoMove(0, 25)
-        btrRobotino.w_goToWall(0.015 + 0.020)
+        btrRobotino.w_goToWall(0.35)
         btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToWall(0.17)
 
-        name = "g_ref_img"
-        a_previous = 0
-        for i in range(10):
-            pg.g_run()
-            rospy.sleep(1)
-            img = cv2.imread("{}.jpg".format(name), 0)
-            wd = module_work_detect(img)
-            ato_take = wd.detect()
-            if ato_take == -1: # left
-                btrRobotino.w_robotinoMove(0, -0.015)
-            elif ato_take == 1: # right
-                btrRobotino.w_robotinoMove(0, 0.015)
-            elif ato_take == 2: # none detected
-                btrRobotino.w_robotinoMove(0, -a_previous * 0.015)
-            else:
-                break
-            a_previous = int((-ato_take) * (ato_take % 2))
-
-        #btrRobotino.w_goToOutputVelt()
-        btrRobotino.w_goToWall(0.015)
+        adjustment(name, pg, True)
         btrRobotino.w_getWork()
 
         if (robotNum != 2):
@@ -298,27 +373,11 @@ def startGrasping():
             btrRobotino.w_turnCounterClockwise()
 
         btrRobotino.w_goToInputVelt()
-        btrRobotino.w_goToWall(0.015 + 0.020)
+        btrRobotino.w_goToWall(0.35)
         btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToWall(0.17)
 
-        name = "r_ref_img"
-        a_previous = 0
-        for i in range(10):
-            pg.r_run()
-            rospy.sleep(1)
-            img = cv2.imread("{}.jpg".format(name), 0)
-            ld = module_line_detect(img)
-            ato_take = ld.detect()
-            if ato_take == -1: # left
-                btrRobotino.w_robotinoMove(0, -0.015)
-            elif ato_take == 1: # right
-                btrRobotino.w_robotinoMove(0, 0.015)
-            elif ato_take == 2: # none detected
-                btrRobotino.w_robotinoMove(0, -a_previous * 0.015)
-            else:
-                break
-            a_previous = int((-ato_take) * (ato_take % 2))
-        btrRobotino.w_goToWall(0.015)
+        adjustment(name, pg, True)
 
         btrRobotino.w_putWork()
         if (robotNum != 2):
@@ -326,12 +385,69 @@ def startGrasping():
         else:
             btrRobotino.w_turnClockwise()
 
-        print("{} / 3 finished!".format(_+1))
+def adjustment(name, pg, rs):
+    a_previous = 0
+    for i in range(10):
+        pg.run()
+        rospy.sleep(1)
+        if rs:
+            d = module_belt_detect(name)
+        else:
+            d = module_belt_detect_for_c920(name)
+        ato_take = d.run()
+        d.show_result()
+        if ato_take == -1: # left
+            btrRobotino.w_robotinoMove(0, -0.015)
+        elif ato_take == 1: # right
+            btrRobotino.w_robotinoMove(0, 0.015)
+        elif ato_take == 2: # none detected
+            btrRobotino.w_robotinoMove(0, -a_previous * 0.015)
+        else:
+            break
+        a_previous = int((-ato_take)*(ato_take % 2))
 
+def startGrasping_by_c920():
+    name = "ref_img"
+    pg = module_photographer_by_c920(name)
+    for _ in range(3):
+        print("{} / 3 repeation".format(_+1))
+        challengeFlag = False
+
+        btrRobotino.w_goToWall(0.90)
+        btrRobotino.w_goToOutputVelt()
+        btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToWall(0.40)
+
+        adjustment(name, pg, False)
+
+        btrRobotino.w_goToWall(0.17)
+
+        #btrRobotino.w_bringWork()
+        btrRobotino.w_getWork()
+        if (robotNum != 2):
+            btrRobotino.w_turnClockwise()
+        else:
+            btrRobotino.w_turnCounterClockwise()
+
+        btrRobotino.w_goToWall(0.90)
+        btrRobotino.w_goToInputVelt()
+        btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToWall(0.40)
+
+        adjustment(name, pg, False)
+
+        btrRobotino.w_goToWall(0.17)
+
+        btrRobotino.w_putWork()
+        if (robotNum != 2):
+            btrRobotino.w_turnCounterClockwise()
+        else:
+            btrRobotino.w_turnClockwise()
 
 def initField():
     global btrField
-    btrField = [[0 for y in range(FIELDSIZEY)] for x in range(FIELDSIZEX)]
+    # btrField = [[0 for y in range(FIELDSIZEY)] for x in range(FIELDSIZEX)]
+    btrField = [[0 for x in range(FIELDSIZEX)] for y in range(FIELDSIZEY)]
     for zone in range(2):
         for x in range(1, 8):
             for y in range(1, 8):
@@ -348,7 +464,6 @@ def initField():
 
 def setField(x, y, number):
     global FIELDMINX, FIELDMINY
-    # print(x, FIELDMINX, y, FIELDMINX, number)
     btrField[y - FIELDMINY][x - FIELDMINX] = number
 
 def getField(x, y):
@@ -371,9 +486,17 @@ def zoneToPose2D(zone):
 def setMPStoField():
     global btrField
     point = Pose2D()
-    for machine in refboxMachineInfo.machines:
-        point = zoneToPose2D(machine.zone)
-        print("setMPS: ", machine.name, machine.zone, point.x, point.y)
+     
+    if (len(refboxMachineInfo.machines) > 0):
+        btrRobotino.machineList = ""
+        for machine in refboxMachineInfo.machines:
+            btrRobotino.w_addMPS(machine.name, machine.zone)
+
+    print(btrRobotino.machineList)
+    for machine in btrRobotino.machineList:
+        print(machine)
+        point = zoneToPose2D(machine[1])
+        print("setMPS: ", machine[0], machine[1], point.x, point.y)
         if (point.x == 0 and point.y == 0):
             print("received NULL data for MPS", machine.name)
         else:
@@ -391,18 +514,49 @@ def getStep(x, y):
 
 def wallCheck(x, y, dx, dy):
     notWallFlag = True
-    if ((x == -5 and y == 1) and (dx ==  0 and dy ==  1)):
-        notWallFlag = False
-    if ((x == -4 and y == 1) and (dx ==  0 and dy ==  1)):
-        notWallFlag = False
-    if ((x == -3 and y == 1) and (dx ==  1 and dy ==  0)):
-        notWallFlag = False
-    if ((x == -2 and y == 1) and (dx == -1 and dy ==  0)):
-        notWallFlag = False
-    if ((x == -5 and y == 2) and (dx ==  0 and dy == -1)):
-        notWallFlag = False
-    if ((x == -4 and y == 2) and (dx ==  0 and dy == -1)):
-        notWallFlag = False
+    # magenta side
+    if (FIELDMINX == -5):
+        if ((x == -5 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x == -4 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x == -3 and y == 1) and (dx ==  1 and dy ==  0)):
+            notWallFlag = False
+        if ((x == -2 and y == 1) and (dx == -1 and dy ==  0)):
+            notWallFlag = False
+        if ((x == -5 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+        if ((x == -4 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+    else:
+        # amgenta side
+        if ((x == -6 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x == -7 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x == -5 and y == 1) and (dx ==  1 and dy ==  0)):
+            notWallFlag = False
+        if ((x == -4 and y == 1) and (dx == -1 and dy ==  0)):
+            notWallFlag = False
+        if ((x == -6 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+        if ((x == -6 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+
+        # cyan side
+        if ((x ==  6 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x ==  7 and y == 1) and (dx ==  0 and dy ==  1)):
+            notWallFlag = False
+        if ((x ==  5 and y == 1) and (dx == -1 and dy ==  0)):
+            notWallFlag = False
+        if ((x ==  4 and y == 1) and (dx ==  1 and dy ==  0)):
+            notWallFlag = False
+        if ((x ==  6 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+        if ((x ==  6 and y == 2) and (dx ==  0 and dy == -1)):
+            notWallFlag = False
+
     return notWallFlag
 
 def getNextDirection(x, y):
@@ -416,6 +570,7 @@ def getNextDirection(x, y):
             minStep = getField(x + dx, y + dy)
             nextD.x = dx
             nextD.y = dy
+    print("nextDirection", dx, dy, "now: ",getField(x, y), "next: ", getField(x +dx, y +dy))
     return nextD
 
 def makeNextPoint(destination):
@@ -434,14 +589,34 @@ def makeNextPoint(destination):
                                        getStep(x + 1, y), getStep(x, y + 1)) \
                                    + 1)
                     # wall information
-                    if (x == -5 and y == 1): # M_Z51 = M_Z41 + 1
-                        setField(x, y, getStep(x + 1, y) + 1)
-                    if (x == -4 and y == 1): # M_Z41 = M_Z31 + 1
-                        setField(x, y, getStep(x + 1, y) + 1)
-                    if (x == -3 and y == 1): # M_Z31 = M_Z32 + 1
-                        setField(x, y, getStep(x, y + 1) + 1)
-                    if (x == -2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
-                        setField(x, y, min(getStep(x, y + 1), getStep(x + 1, y)) + 1)
+                    if (FIELDMINX == -5):
+                        if (x == -5 and y == 1): # M_Z51 = M_Z41 + 1
+                            setField(x, y, getStep(x + 1, y) + 1)
+                        if (x == -4 and y == 1): # M_Z41 = M_Z31 + 1
+                            setField(x, y, getStep(x + 1, y) + 1)
+                        if (x == -3 and y == 1): # M_Z31 = M_Z32 + 1
+                            setField(x, y, getStep(x, y + 1) + 1)
+                        if (x == -2 and y == 1): # M_Z21 <= min(M_Z22, MZ_11) + 1
+                            setField(x, y, min(getStep(x, y + 1), getStep(x + 1, y)) + 1)
+                    else:
+                        if (x == -6 and y == 1): # M_Z61 = M_Z51 + 1
+                            setField(x, y, getStep(x + 1, y) + 1)
+                        if (x == -7 and y == 1): # M_Z71 = M_Z61 + 1
+                            setField(x, y, getStep(x + 1, y) + 1)
+                        if (x == -5 and y == 1): # M_Z51 = M_Z52 + 1
+                            setField(x, y, getStep(x, y + 1) + 1)
+                        if (x == -4 and y == 1): # M_Z41 <= min(M_Z42, MZ_31) + 1
+                            setField(x, y, min(getStep(x, y + 1), getStep(x + 1, y)) + 1)
+                        if (x ==  6 and y == 1): # C_Z61 = C_Z51 + 1
+                            setField(x, y, getStep(x - 1, y) + 1)
+                        if (x ==  7 and y == 1): # C_Z71 = C_Z61 + 1
+                            setField(x, y, getStep(x - 1, y) + 1)
+                        if (x ==  5 and y == 1): # C_Z51 = C_Z52 + 1
+                            setField(x, y, getStep(x, y + 1) + 1)
+                        if (x ==  4 and y == 1): # C_Z41 <= min(C_Z42, CZ_31) + 1
+                            setField(x, y, min(getStep(x, y + 1), getStep(x - 1, y)) + 1)
+
+
 
     # get optimized route
     if (False):
@@ -478,8 +653,10 @@ def makeNextPoint(destination):
         if (nextD.x == dx and nextD.y == dy):
             theta = phi
 
-    goToPoint(robotReal.x, robotReal.y, theta) # turn for the next point.
+    # goToPoint(robotReal.x, robotReal.y, theta) # turn for the next point.
+    btrRobotino.w_robotinoTurnAbs(theta) # only turn
 
+    print("direction:", nextD.x, nextD.y)
     while True:
         # print(point)
         if getField(point.x, point.y) == 0:
@@ -516,48 +693,103 @@ def getNextPoint(pointNumber):
     # zone = route[pointNumber].zone
     zone = route[0].zone
 
-    print(zone)
+    print("getNextPoint:", zone)
+    if (btrOdometry.pose.pose.position.x > 0):
+        zone = zone - 1000
+    print("gazebo zone:", zone)
     point = makeNextPoint(zone)
     return point
 
 def startNavigation():
-    global btrField
+    global btrField, oldTheta
     # initField()
-    print("----")
-    setMPStoField()
+    # print("----")
+    # setMPStoField()
     print("====")
     oldTheta = 90
-    for pointNumber in range(12):
+    while (len(refboxNavigationRoutes.route) == 0):
+        btrRobotino.rate.sleep()
+        
+    for pointNumber in range(12 + 999):
         print(pointNumber)
         route = refboxNavigationRoutes.route
+        print(route)
         if (len(route) == 0):
             print("finished")
         else:
-            point = getNextPoint(pointNumber)
-            robot = btrOdometry.pose.pose.position
             while True:
                 point = getNextPoint(pointNumber)
-                if (point.x > 0):
-                    point.x = point.x * 1.0 - 0.5
-                else:
-                    point.x = point.x * 1.0 + 0.5
-                point.y = point.y * 1.0 - 0.5
-                if (point.theta == 360):
-                    goToPoint(point.x, point.y, oldTheta)
+                print("point:", point)
+                if (navToPoint(point) == True):
                     break
-                else:
-                    goToPoint(point.x, point.y, point.theta)
-                oldTheta = point.theta
-
+                print("not arrived?")
             print("arrived #", pointNumber + 1, ": point")
             for i in range(4):
                 sendBeacon()
                 rospy.sleep(2)
 
+def navToPoint(point):
+    global oldTheta
+    setMPStoField()
+    
+    btrRobotino.w_waitOdometry()
+    robot = btrOdometry.pose.pose.position
+
+    if (point.x > 0):
+        point.x = point.x * 1.0 - 0.5
+    else:
+        point.x = point.x * 1.0 + 0.5
+    point.y = point.y * 1.0 - 0.5
+    print("navToPoint ", point.x, point.y, point.theta)
+    if (point.theta == 360):
+        goToPoint(point.x, point.y, oldTheta)
+        return True
+    else:
+        goToPoint(point.x, point.y, point.theta)
+        oldTheta = point.theta
+        return False
+
     print("****")
     # print(refboxNavigationRoutes)
     # print(refboxMachineInfo)
 
+def startProductionC0():
+    global oldTheta, btrField
+    print("Production Challenge started")
+    # initField()
+    # print("----")
+    # setMPStoField()
+    print("====")
+    oldTheta = 90
+    for pointNumber in range(12 * 0 + 999):
+        print(pointNumber)
+        route = refboxNavigationRoutes.route
+        if (len(route) == 0):
+            print("finished")
+        else:
+            while True:
+                point = getNextPoint(pointNumber)
+                if (navToPoint(point) == True):
+                    break
+            print("arrived #", pointNumber + 1, ": point")
+            for i in range(4):
+                sendBeacon()
+                rospy.sleep(2)
+
+def startOpen():
+    print("Run demonstration program")
+    challengeFlag = False
+
+    btrRobotino.w_goToWall(0.90)
+    btrRobotino.w_goToOutputVelt()
+    btrRobotino.w_parallelMPS()
+    btrRobotino.w_goToWall(0.40)
+    btrRobotino.w_robotinoMove(0, 0.1)
+    btrRobotino.w_parallelMPS()
+    btrRobotino.w_pick_rs()
+    btrRobotino.w_move_scan()
+    time.sleep(3)
+    #btrRobotino.w_put_rs()
 
 # main
 #
@@ -570,7 +802,7 @@ if __name__ == '__main__':
       robotNum = int(args[2])
     else:
       robotNum = 1
-    if challenge == "gazebo":
+    if (challenge == "gazebo" or challenge == "gazebo1"):
       topicName = "/robotino" + str(robotNum)
 
   # valiables for refbox
@@ -626,8 +858,8 @@ if __name__ == '__main__':
   btrRobotino = btr2023.btr2023(topicName)
 
   if (challenge == "reset"):
-      goToPoint(-2.5,  1.5, 90)
-      goToPoint(-2.5,  0.5, 90)
+      goToPoint(-3.5,  1.5, 90)
+      goToPoint(-3.5,  0.5, 90)
       goToPoint(pose.x, pose.y, pose.theta)
       exit()
 
@@ -646,7 +878,7 @@ if __name__ == '__main__':
       pose.x = zoneX["S31"]
       pose.y = zoneY["S31"]
       pose.theta = 90
-  if (challenge == "gazebo" or challenge == "rcll"):
+  if (challenge == "gazebo" or challenge == "rcll" or challenge == "test"):
       pose.x = -(pose.x - 2.0)
 
   print(pose.x, pose.y, pose.theta)
@@ -668,13 +900,33 @@ if __name__ == '__main__':
         goToPoint(zoneX["S33"], zoneY["S33"], 90)
         for j in range(2):
             for i in range(9):
-                btrRobotino.w_findMPS()
+                # btrRobotino.w_findMPS()
+                w_findMPS()
                 btrRobotino.w_robotinoTurnAbs(45 * i)
             print(j)
             time.sleep(3)
         
         goToPoint(zoneX["S31"], zoneY["S31"], 90)
         break
+
+    if (challenge == "exploration" and challengeFlag and refboxGamePhase == 20 ):
+    # if (challenge == "gazebo1" and challengeFlag):
+        challengeFlag = False
+        # goTo S32
+        goToPoint(zoneX["S32"], zoneY["S32"], 90)
+        for i in range(5):
+            w_findMPS()
+            btrRobotino.w_robotinoTurnAbs(45 * i)
+        # goTo S34
+        navPoint = Pose2D()
+        for ZONE in ["S34", "S44", "S42", "S22", "S24", "S32"]:
+            navPoint.x = zoneX[ZONE]
+            navPoint.y = zoneY[ZONE]
+            navPoint.theta = 90
+            navToPoint(navPoint)
+            for i in range(9):
+                w_findMPS()
+                btrRobotino.w_robotinoTurnAbs(45 * i)
 
     if (challenge == "gripping" and challengeFlag):
         slotNo = 3
@@ -818,25 +1070,52 @@ if __name__ == '__main__':
             
     if ( challenge == "gazebo"):
         sendBeacon()
-        print(challenge)
+        #/ print(challenge)
         if (refboxGamePhase == 30 and challengeFlag):
-            if (refboxTime.sec <= 180): # for exploration
-                challengeFlag = False
-                print("GoToExploration")
-                goToPoint(zoneX["51"], zoneY["51"],  90)
-                goToPoint(zoneX["52"], zoneY["52"],   0)
-                # findMPS
-                for i in range(-2, 2):
-                    btrRobotino.w_findMPS()
-                    btrRobotino.w_robotinoTurnAbs(45 * i)
-
+            # make c0
+            print(refboxMachineInfo)
+           
 
     if ( challenge == "test" and challengeFlag):
         challengeFlag = False
         sendBeacon()
-        goToPoint(zoneX["1031"], zoneY["1031"], 90)
-        goToPoint(zoneX["1032"], zoneY["1032"],-90)
-        goToPoint(zoneX["1031"], zoneY["1031"], 90)
+        
+        goToPoint(zoneX["51"], zoneY["51"],  90)
+        goToPoint(zoneX["52"], zoneY["52"],   0)
+
+        # if (btrRobotino.w_findMPS() == True):
+        if (w_findMPS() == True):
+          btrRobotino.w_goToOutputVelt()
+        # btrRobotino.w_goToWall(0.015 + 0.020)
+        # btrRobotino.w_parallelMPS()
+        # btrRobotino.w_findMPS()
+
+    if (challenge == "test_by_c920"):
+        startGrasping_by_c920()
+        challengeFlag = False
+        break
+
+    if (challenge == "test_C0"):
+        graspTransparent()
+        challengeFlag = False
+        break
+    
+    if (challenge == "testOpen"):
+        startOpen()
+        challengeFlag = False
+        break
+    
+    if (challenge == "beacon"):
+        sendBeacon()
+        print("Game status is ", refboxGamePhase)
+
+    if (challenge == "clockwise"):
+        btrRobotino.w_turnClockwise()
+
+    if (challenge == "camera"):
+        btrRobotino.w_goToInputVelt()
+        btrRobotino.w_parallelMPS()
+        btrRobotino.w_goToWall(0.4)
 
     sendBeacon()
     rate.sleep()
