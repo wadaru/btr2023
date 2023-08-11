@@ -89,10 +89,10 @@ def calcPoint():
   # print("centerAng:", minAngle, "left:", leftPoint.z, "right:", rightPoint.z)
   # print("dist", ((leftPoint.x - rightPoint.x) ** 2 + (leftPoint.y - rightPoint.y) **2) ** 0.5)
 
-  forwardPoint = polarToPoint((START_ANGLE + END_ANGLE) / 2, scanDistance(START_ANGLE + END_ANGLE) / 2)
+  forwardPoint = polarToPoint(scanDistance(START_ANGLE + END_ANGLE) / 2, (START_ANGLE + END_ANGLE) / 2)
   radius = 0.3
   for i in range(START_EDGE_ANGLE, END_EDGE_ANGLE):
-    obstraclPoint = polarToPoint(i, scanDistance(i))
+    obstraclPoint = polarToPoint(scanDistance(i), i)
     if (forwardPoint.x > obstaclPoint.x):
       if (-radius < obstaclePoint.y and obstaclePoint.y < radius):
         forwardPoint = obstaclePoint
